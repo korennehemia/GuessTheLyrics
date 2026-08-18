@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guess Song Lyrics</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header" id="appHeader">
+      <h1>🎵 Guess Song Lyrics</h1>
+      <p class="tagline">Type words to uncover the hidden lyrics before the clock runs out.</p>
+    </header>
+
+    <!-- Song selection screen -->
+    <section id="selectScreen" class="screen">
+      <div class="select-head">
+        <h2>Choose a song</h2>
+        <button id="addSongBtn" class="btn btn-secondary" type="button">➕ Add song</button>
+      </div>
+      <div class="select-row">
+        <input id="songSearch" type="search" placeholder="Search by title or artist…" autocomplete="off" />
+      </div>
+      <ul id="songList" class="song-list" aria-label="Song list"></ul>
+      <p id="songListEmpty" class="muted hidden">No songs match your search.</p>
+    </section>
+
+    <!-- Add song screen -->
+    <section id="addScreen" class="screen hidden">
+      <button id="addBackBtn" class="btn btn-ghost" type="button">← Songs</button>
+      <h2>Add a song</h2>
+      <form id="addSongForm" class="add-form" novalidate>
+        <label class="add-field">
+          <span>Song name</span>
+          <input id="addTitle" type="text" maxlength="200" autocomplete="off" dir="auto" required />
+        </label>
+        <label class="add-field">
+          <span>Artist</span>
+          <input id="addArtist" type="text" maxlength="200" autocomplete="off" dir="auto" />
+        </label>
+        <label class="add-field">
+          <span>Language</span>
+          <select id="addLanguage">
+            <option value="en">English</option>
+            <option value="he">Hebrew (עברית)</option>
+          </select>
+        </label>
+        <label class="add-field">
+          <span>Lyrics</span>
+          <textarea id="addLyrics" rows="12" dir="auto" placeholder="Paste the full lyrics here…" required></textarea>
+        </label>
+        <p id="addError" class="add-error hidden"></p>
+        <div class="add-actions">
+          <button id="addSubmitBtn" class="btn btn-primary" type="submit">Save song</button>
+          <button id="addCancelBtn" class="btn btn-ghost" type="button">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+
+    <!-- Song detail / pre-game screen -->
+    <section id="detailScreen" class="screen hidden">
+      <button id="detailBackBtn" class="btn btn-ghost" type="button">← Songs</button>
+      <div class="detail-head">
+        <h2 id="detailTitle" dir="auto"></h2>
+        <p class="detail-artist" id="detailArtist" dir="auto"></p>
+        <div class="detail-meta">
+          <span class="chip" id="detailLang"></span>
+          <span class="chip" id="detailWords"></span>
+        </div>
+      </div>
+
+      <div class="user-row detail-user">
+        <label for="userSelect">👤 Who's playing?</label>
+        <select id="userSelect" aria-label="Choose player"></select>
+      </div>
+
+      <div class="leaderboard">
+        <h3 class="leaderboard-title">🏆 Top 5</h3>
+        <ol id="detailLeaderboardList" class="leaderboard-list"></ol>
+        <p id="detailLeaderboardEmpty" class="muted hidden">No scores yet — be the first!</p>
+      </div>
+
+      <button id="startGameBtn" class="btn btn-primary btn-block" type="button">▶ Start game</button>
+    </section>
+
+    <!-- Challenge screen -->
+    <section id="challengeScreen" class="screen hidden">
+      <div class="challenge-topbar">
+        <div class="challenge-meta">
+          <div class="song-title" id="challengeTitle"></div>
+          <div class="song-artist" id="challengeArtist"></div>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">Time</span>
+            <span class="stat-value" id="timer">10:00</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Found</span>
+            <span class="stat-value" id="wordsFound">0 / 0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-track" aria-hidden="true">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <div class="input-row">
+        <input id="guessInput" type="text" placeholder="Type a word from the lyrics…" autocomplete="off" spellcheck="false" />
+        <button id="pauseBtn" class="btn btn-secondary" type="button">Pause</button>
+        <button id="giveUpBtn" class="btn btn-secondary" type="button">Give up</button>
+        <button id="showResultsBtn" class="btn btn-primary hidden" type="button">Show results</button>
+      </div>
+
+      <div id="lyrics" class="lyrics" aria-live="polite"></div>
+    </section>
+
+    <!-- Result overlay -->
+    <div id="resultOverlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h2 id="resultTitle">Time!</h2>
+        <p id="resultText"></p>
+        <div class="leaderboard" id="leaderboard">
+          <h3 class="leaderboard-title">🏆 Leaderboard <span id="leaderboardSong" class="muted"></span></h3>
+          <ol id="leaderboardList" class="leaderboard-list"></ol>
+          <p id="leaderboardEmpty" class="muted hidden">No scores yet — you're the first!</p>
+        </div>
+        <div class="overlay-actions">
+          <button id="playAgainBtn" class="btn btn-primary" type="button">Play again</button>
+          <button id="viewLyricsBtn" class="btn btn-secondary" type="button">View lyrics ↓</button>
+          <button id="chooseAnotherBtn" class="btn btn-ghost" type="button">Choose another song</button>
+        </div>
+      </div>
+    </div>
+    <!-- Pause overlay -->
+    <div id="pauseOverlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h2>⏸ Paused</h2>
+        <p>The timer is stopped and the lyrics are hidden. Take your time.</p>
+        <div class="overlay-actions">
+          <button id="continueBtn" class="btn btn-primary" type="button">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js" type="module"></script>
+</body>
+</html>

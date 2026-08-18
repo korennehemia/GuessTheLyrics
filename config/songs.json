@@ -1,0 +1,304 @@
+{
+  "songs": [
+    {
+      "file": "רולקס וקסקט.txt",
+      "title": "רולקס וקסקט",
+      "artist": "עדן בן זקן",
+      "language": "he"
+    },
+    {
+      "file": "ממעמקים.txt",
+      "title": "ממעמקים",
+      "artist": "עידן רייכל",
+      "language": "he"
+    },
+    {
+      "file": "put-your-records-on.txt",
+      "title": "Put Your Records On",
+      "artist": "Corinne Bailey Rae",
+      "language": "en"
+    },
+    {
+      "file": "אישה נאמנה.txt",
+      "title": "אישה נאמנה",
+      "artist": "ישי לוי",
+      "language": "he"
+    },
+    {
+      "file": "Call Me Maybe.txt",
+      "title": "Call Me Maybe",
+      "artist": "Carly Rae Jepsen",
+      "language": "en"
+    },
+    {
+      "file": "Wonderwall.txt",
+      "title": "Wonderwall",
+      "artist": "Oasis",
+      "language": "en"
+    },
+    {
+      "file": "בית ביפו.txt",
+      "title": "בית ביפו",
+      "artist": "דודו טסה",
+      "language": "he"
+    },
+    {
+      "file": "The Fear.txt",
+      "title": "The Fear",
+      "artist": "Lily Allen",
+      "language": "en"
+    },
+    {
+      "file": "צל עץ תמר.txt",
+      "title": "צל עץ תמר",
+      "artist": "קרולינה!",
+      "language": "he"
+    },
+    {
+      "file": "45.txt",
+      "title": "45",
+      "artist": "Shinedown",
+      "language": "en"
+    },
+    {
+      "file": "Thank You Next.txt",
+      "title": "Thank You Next",
+      "artist": "Ariana Grande",
+      "language": "en"
+    },
+    {
+      "file": "אם אתה גבר.txt",
+      "title": "אם אתה גבר",
+      "artist": "נועה קירל",
+      "language": "he"
+    },
+    {
+      "file": "איך אפשר שלא.txt",
+      "title": "איך אפשר שלא",
+      "artist": "ג'יין בורדו",
+      "language": "he"
+    },
+    {
+      "file": "בסיבוב הבא.txt",
+      "title": "בסיבוב הבא",
+      "artist": "עדן בן זקן",
+      "language": "he"
+    },
+    {
+      "file": "26.txt",
+      "title": "26",
+      "artist": "נתן גושן",
+      "language": "he"
+    },
+    {
+      "file": "עדיין ריק.txt",
+      "title": "עדיין ריק",
+      "artist": "לירן דנינו",
+      "language": "he"
+    },
+    {
+      "file": "קשה בכדור הארץ.txt",
+      "title": "קשה בכדור הארץ",
+      "artist": "טונה",
+      "language": "he"
+    },
+    {
+      "file": "Espresso.txt",
+      "title": "Espresso",
+      "artist": "Sabrina Carpenter",
+      "language": "en"
+    },
+    {
+      "file": "את חסרה לי.txt",
+      "title": "את חסרה לי",
+      "artist": "עדן חסון",
+      "language": "he"
+    },
+    {
+      "file": "עץ ירוק מפלסטיק.txt",
+      "title": "עץ ירוק מפלסטיק",
+      "artist": "מרגול",
+      "language": "he"
+    },
+    {
+      "file": "הייתי חוזרת.txt",
+      "title": "הייתי חוזרת",
+      "artist": "עדן בן זקן",
+      "language": "he"
+    },
+    {
+      "file": "כולם גנבים.txt",
+      "title": "כולם גנבים",
+      "artist": "אושר כהן",
+      "language": "he"
+    },
+    {
+      "file": "מנגן ושר.txt",
+      "title": "מנגן ושר",
+      "artist": "אושר כהן",
+      "language": "he"
+    },
+    {
+      "file": "פלסטרים.txt",
+      "title": "פלסטרים",
+      "artist": "אושר כהן",
+      "language": "he"
+    },
+    {
+      "file": "Budapest.txt",
+      "title": "Budapest",
+      "artist": "George Ezra",
+      "language": "en"
+    },
+    {
+      "file": "Vienna.txt",
+      "title": "Vienna",
+      "artist": "Billy Joel",
+      "language": "en"
+    },
+    {
+      "file": "Mardy Bum.txt",
+      "title": "Mardy Bum",
+      "artist": "Arctic Monkeys",
+      "language": "en"
+    },
+    {
+      "file": "Fluorescent Adolescent.txt",
+      "title": "Fluorescent Adolescent",
+      "artist": "Arctic Monkeys",
+      "language": "en"
+    },
+    {
+      "file": "R U Mine.txt",
+      "title": "R U Mine",
+      "artist": "Arctic Monkeys",
+      "language": "en"
+    },
+    {
+      "file": "Do I Wanna Know.txt",
+      "title": "Do I Wanna Know?",
+      "artist": "Arctic Monkeys",
+      "language": "en"
+    },
+    {
+      "file": "מגדלים.txt",
+      "title": "מגדלים",
+      "artist": "נס וסטילה",
+      "language": "he"
+    },
+    {
+      "file": "שרה רוז קלפטון.txt",
+      "title": "שרה רוז קלפטון",
+      "artist": "נועם צוריאלי",
+      "language": "he"
+    },
+    {
+      "file": "לופ.txt",
+      "title": "לופ",
+      "artist": "אושר כהן",
+      "language": "he"
+    },
+    {
+      "file": "אהבה.txt",
+      "title": "אהבה",
+      "artist": "אושר כהן",
+      "language": "he"
+    },
+    {
+      "file": "הסיפור הוא לא עלייך.txt",
+      "title": "הסיפור הוא לא עלייך",
+      "artist": "נועם צוריאלי",
+      "language": "he"
+    },
+    {
+      "file": "נשאר בחיים.txt",
+      "title": "נשאר בחיים",
+      "artist": "טונה",
+      "language": "he"
+    },
+    {
+      "file": "ויסקי.txt",
+      "title": "ויסקי",
+      "artist": "ג'יין בורדו",
+      "language": "he"
+    },
+    {
+      "file": "עינב.txt",
+      "title": "עינב",
+      "artist": "ג'יין בורדו",
+      "language": "he"
+    },
+    {
+      "file": "לולה.txt",
+      "title": "לולה",
+      "artist": "דודו טסה",
+      "language": "he"
+    },
+    {
+      "file": "דודות לעשן.txt",
+      "title": "דודות לעשן",
+      "artist": "אלישע חכמון",
+      "language": "he"
+    },
+    {
+      "file": "אף אחד.txt",
+      "title": "אף אחד",
+      "artist": "עדן בן זקן",
+      "language": "he"
+    },
+    {
+      "file": "במקום בו אני גר.txt",
+      "title": "במקום בו אני גר",
+      "artist": "ג'ימבו ג'יי",
+      "language": "he"
+    },
+    {
+      "file": "נעים עכשיו.txt",
+      "title": "נעים עכשיו",
+      "artist": "עילי בוטנר",
+      "language": "he"
+    },
+    {
+      "file": "מלכת השושנים.txt",
+      "title": "מלכת השושנים",
+      "artist": "עדן בן זקן",
+      "language": "he"
+    },
+    {
+      "file": "שיר אהבה אינדיאני (מיגל).txt",
+      "title": "שיר אהבה אינדיאני (מיגל)",
+      "artist": "עלמה זהר",
+      "language": "he"
+    },
+    {
+      "file": "בחורים טובים.txt",
+      "title": "בחורים טובים",
+      "artist": "עומר אדם",
+      "language": "he"
+    },
+    {
+      "file": "יום חדש נפלא.txt",
+      "title": "יום חדש נפלא",
+      "artist": "אריק ברמן",
+      "language": "he"
+    },
+    {
+      "file": "I Kissed A Girl.txt",
+      "title": "I Kissed A Girl",
+      "artist": "Katy Perry",
+      "language": "en"
+    },
+    {
+      "file": "Maneater.txt",
+      "title": "Maneater",
+      "artist": "Daryl Hall & John Oates",
+      "language": "en"
+    },
+    {
+      "file": "Tell Me Something I Dont Know.txt",
+      "title": "Tell Me Something I Dont Know",
+      "artist": "Celeste",
+      "language": "en"
+    }
+  ]
+}

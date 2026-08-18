@@ -1,0 +1,574 @@
+{
+  "scores": [
+    {
+      "user": "Guest",
+      "file": "ממעמקים.txt",
+      "title": "ממעמקים",
+      "words": 90,
+      "total": 106,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T09:37:18.923Z"
+    },
+    {
+      "user": "Guest",
+      "file": "צל עץ תמר.txt",
+      "title": "צל עץ תמר",
+      "words": 20,
+      "total": 117,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T12:09:11.588Z"
+    },
+    {
+      "user": "Saar",
+      "file": "קשה בכדור הארץ.txt",
+      "title": "קשה בכדור הארץ",
+      "words": 145,
+      "total": 194,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T12:27:43.231Z"
+    },
+    {
+      "user": "Saar",
+      "file": "קשה בכדור הארץ.txt",
+      "title": "קשה בכדור הארץ",
+      "words": 0,
+      "total": 194,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T12:28:27.891Z"
+    },
+    {
+      "user": "Koren",
+      "file": "קשה בכדור הארץ.txt",
+      "title": "קשה בכדור הארץ",
+      "words": 158,
+      "total": 194,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T12:47:19.938Z"
+    },
+    {
+      "user": "Koren",
+      "file": "איך אפשר שלא.txt",
+      "title": "איך אפשר שלא",
+      "words": 132,
+      "total": 133,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T12:57:01.528Z"
+    },
+    {
+      "user": "Koren",
+      "file": "רולקס וקסקט.txt",
+      "title": "רולקס וקסקט",
+      "words": 87,
+      "total": 100,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T13:01:34.173Z"
+    },
+    {
+      "user": "Koren",
+      "file": "The Fear.txt",
+      "title": "The Fear",
+      "words": 285,
+      "total": 294,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T13:10:19.508Z"
+    },
+    {
+      "user": "Saar",
+      "file": "איך אפשר שלא.txt",
+      "title": "איך אפשר שלא",
+      "words": 71,
+      "total": 133,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T13:21:18.481Z"
+    },
+    {
+      "user": "Saar",
+      "file": "עץ ירוק מפלסטיק.txt",
+      "title": "עץ ירוק מפלסטיק",
+      "words": 84,
+      "total": 119,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T13:32:40.943Z"
+    },
+    {
+      "user": "Koren",
+      "file": "עץ ירוק מפלסטיק.txt",
+      "title": "עץ ירוק מפלסטיק",
+      "words": 105,
+      "total": 119,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T13:58:09.223Z"
+    },
+    {
+      "user": "Guest",
+      "file": "ממעמקים.txt",
+      "title": "ממעמקים",
+      "words": 62,
+      "total": 106,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T14:40:27.119Z"
+    },
+    {
+      "user": "Tomer",
+      "file": "בסיבוב הבא.txt",
+      "title": "בסיבוב הבא",
+      "words": 129,
+      "total": 167,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T17:46:04.456Z"
+    },
+    {
+      "user": "Tomer",
+      "file": "Espresso.txt",
+      "title": "Espresso",
+      "words": 337,
+      "total": 391,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-13T17:57:27.082Z"
+    },
+    {
+      "user": "Koren",
+      "file": "בית ביפו.txt",
+      "title": "בית ביפו",
+      "words": 100,
+      "total": 100,
+      "finished": true,
+      "seconds": 362,
+      "date": "2026-08-13T18:05:14.357Z"
+    },
+    {
+      "user": "Tomer",
+      "file": "אם אתה גבר.txt",
+      "title": "אם אתה גבר",
+      "words": 321,
+      "total": 321,
+      "finished": true,
+      "seconds": 276,
+      "date": "2026-08-16T06:18:42.713Z"
+    },
+    {
+      "user": "Guest",
+      "file": "אהבה.txt",
+      "title": "אהבה",
+      "words": 108,
+      "total": 229,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T08:31:49.418Z"
+    },
+    {
+      "user": "Guest",
+      "file": "שרה רוז קלפטון.txt",
+      "title": "שרה רוז קלפטון",
+      "words": 260,
+      "total": 454,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T08:42:01.422Z"
+    },
+    {
+      "user": "Guest",
+      "file": "שרה רוז קלפטון.txt",
+      "title": "שרה רוז קלפטון",
+      "words": 370,
+      "total": 454,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T08:52:14.863Z"
+    },
+    {
+      "user": "Tomer",
+      "file": "הסיפור הוא לא עלייך.txt",
+      "title": "הסיפור הוא לא עלייך",
+      "words": 379,
+      "total": 449,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T09:05:16.977Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Call Me Maybe.txt",
+      "title": "Call Me Maybe",
+      "words": 399,
+      "total": 409,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T10:48:41.636Z"
+    },
+    {
+      "user": "Koren",
+      "file": "עץ ירוק מפלסטיק.txt",
+      "title": "עץ ירוק מפלסטיק",
+      "words": 107,
+      "total": 119,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T10:55:01.018Z"
+    },
+    {
+      "user": "Tomer",
+      "file": "עץ ירוק מפלסטיק.txt",
+      "title": "עץ ירוק מפלסטיק",
+      "words": 84,
+      "total": 119,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T11:05:30.575Z"
+    },
+    {
+      "user": "Guest",
+      "file": "רולקס וקסקט.txt",
+      "title": "רולקס וקסקט",
+      "words": 0,
+      "total": 100,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T11:06:27.577Z"
+    },
+    {
+      "user": "Guest",
+      "file": "רולקס וקסקט.txt",
+      "title": "רולקס וקסקט",
+      "words": 0,
+      "total": 100,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T11:06:35.185Z"
+    },
+    {
+      "user": "Guest",
+      "file": "אישה נאמנה.txt",
+      "title": "אישה נאמנה",
+      "words": 101,
+      "total": 108,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T11:16:53.690Z"
+    },
+    {
+      "user": "Guest",
+      "file": "נשאר בחיים.txt",
+      "title": "נשאר בחיים",
+      "words": 277,
+      "total": 468,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T11:28:28.816Z"
+    },
+    {
+      "user": "Guest",
+      "file": "26.txt",
+      "title": "26",
+      "words": 217,
+      "total": 222,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T11:40:04.770Z"
+    },
+    {
+      "user": "Guest",
+      "file": "Do I Wanna Know.txt",
+      "title": "Do I Wanna Know?",
+      "words": 172,
+      "total": 385,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T11:43:04.009Z"
+    },
+    {
+      "user": "Guest",
+      "file": "Wonderwall.txt",
+      "title": "Wonderwall",
+      "words": 218,
+      "total": 224,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T11:53:18.703Z"
+    },
+    {
+      "user": "Noam",
+      "file": "צל עץ תמר.txt",
+      "title": "צל עץ תמר",
+      "words": 40,
+      "total": 117,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T12:17:11.673Z"
+    },
+    {
+      "user": "Noam",
+      "file": "עינב.txt",
+      "title": "עינב",
+      "words": 191,
+      "total": 191,
+      "finished": true,
+      "seconds": 204,
+      "date": "2026-08-16T12:44:11.682Z"
+    },
+    {
+      "user": "Soof",
+      "file": "מגדלים.txt",
+      "title": "מגדלים",
+      "words": 286,
+      "total": 322,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T12:55:54.584Z"
+    },
+    {
+      "user": "Noam",
+      "file": "דודות לעשן.txt",
+      "title": "דודות לעשן",
+      "words": 400,
+      "total": 451,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T13:15:27.867Z"
+    },
+    {
+      "user": "Koren",
+      "file": "לולה.txt",
+      "title": "לולה",
+      "words": 126,
+      "total": 141,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T13:27:46.075Z"
+    },
+    {
+      "user": "Soof",
+      "file": "לולה.txt",
+      "title": "לולה",
+      "words": 93,
+      "total": 141,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T13:38:20.571Z"
+    },
+    {
+      "user": "Guest",
+      "file": "אף אחד.txt",
+      "title": "אף אחד",
+      "words": 147,
+      "total": 159,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T13:51:48.869Z"
+    },
+    {
+      "user": "Koren",
+      "file": "אף אחד.txt",
+      "title": "אף אחד",
+      "words": 148,
+      "total": 159,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-16T14:04:59.813Z"
+    },
+    {
+      "user": "Koren",
+      "file": "במקום בו אני גר.txt",
+      "title": "במקום בו אני גר",
+      "words": 288,
+      "total": 575,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T07:46:00.387Z"
+    },
+    {
+      "user": "Soof",
+      "file": "במקום בו אני גר.txt",
+      "title": "במקום בו אני גר",
+      "words": 324,
+      "total": 575,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T07:57:37.496Z"
+    },
+    {
+      "user": "Koren",
+      "file": "נעים עכשיו.txt",
+      "title": "נעים עכשיו",
+      "words": 106,
+      "total": 121,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T08:10:02.269Z"
+    },
+    {
+      "user": "Lihi",
+      "file": "נעים עכשיו.txt",
+      "title": "נעים עכשיו",
+      "words": 18,
+      "total": 121,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T08:17:34.379Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Thank You Next.txt",
+      "title": "Thank You Next",
+      "words": 359,
+      "total": 455,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T08:28:12.412Z"
+    },
+    {
+      "user": "Soof",
+      "file": "מלכת השושנים.txt",
+      "title": "מלכת השושנים",
+      "words": 228,
+      "total": 247,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T10:33:00.915Z"
+    },
+    {
+      "user": "Koren",
+      "file": "מלכת השושנים.txt",
+      "title": "מלכת השושנים",
+      "words": 175,
+      "total": 247,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T10:41:37.510Z"
+    },
+    {
+      "user": "Noam",
+      "file": "שיר אהבה אינדיאני (מיגל).txt",
+      "title": "שיר אהבה אינדיאני (מיגל)",
+      "words": 217,
+      "total": 292,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T10:58:34.098Z"
+    },
+    {
+      "user": "Soof",
+      "file": "שיר אהבה אינדיאני (מיגל).txt",
+      "title": "שיר אהבה אינדיאני (מיגל)",
+      "words": 264,
+      "total": 292,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T11:10:10.276Z"
+    },
+    {
+      "user": "Koren",
+      "file": "שיר אהבה אינדיאני (מיגל).txt",
+      "title": "שיר אהבה אינדיאני (מיגל)",
+      "words": 259,
+      "total": 292,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T11:24:57.373Z"
+    },
+    {
+      "user": "Guest",
+      "file": "בחורים טובים.txt",
+      "title": "בחורים טובים",
+      "words": 86,
+      "total": 150,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T11:42:55.798Z"
+    },
+    {
+      "user": "Koren",
+      "file": "אם אתה גבר.txt",
+      "title": "אם אתה גבר",
+      "words": 320,
+      "total": 321,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T11:50:50.806Z"
+    },
+    {
+      "user": "Soof",
+      "file": "יום חדש נפלא.txt",
+      "title": "יום חדש נפלא",
+      "words": 304,
+      "total": 332,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T12:02:08.822Z"
+    },
+    {
+      "user": "Koren",
+      "file": "הייתי חוזרת.txt",
+      "title": "הייתי חוזרת",
+      "words": 81,
+      "total": 127,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T18:31:05.624Z"
+    },
+    {
+      "user": "Ofir",
+      "file": "I Kissed A Girl.txt",
+      "title": "I Kissed A Girl",
+      "words": 254,
+      "total": 264,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T18:48:55.984Z"
+    },
+    {
+      "user": "Koren",
+      "file": "עדיין ריק.txt",
+      "title": "עדיין ריק",
+      "words": 79,
+      "total": 95,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T21:34:45.611Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Maneater.txt",
+      "title": "Maneater",
+      "words": 294,
+      "total": 343,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T21:44:34.621Z"
+    },
+    {
+      "user": "Koren",
+      "file": "עינב.txt",
+      "title": "עינב",
+      "words": 189,
+      "total": 191,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T21:48:40.685Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Tell Me Something I Dont Know.txt",
+      "title": "Tell Me Something I Dont Know",
+      "words": 268,
+      "total": 341,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-17T21:57:28.686Z"
+    }
+  ]
+}
