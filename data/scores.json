@@ -569,6 +569,126 @@
       "finished": false,
       "seconds": null,
       "date": "2026-08-17T21:57:28.686Z"
+    },
+    {
+      "user": "Tomer",
+      "file": "I Kissed A Girl.txt",
+      "title": "I Kissed A Girl",
+      "words": 247,
+      "total": 264,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-19T06:31:57.268Z"
+    },
+    {
+      "user": "Koren",
+      "file": "7 Rings.txt",
+      "title": "7 Rings",
+      "words": 431,
+      "total": 488,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-19T09:23:53.501Z"
+    },
+    {
+      "user": "Koren",
+      "file": "זוט עני.txt",
+      "title": "זוט עני",
+      "words": 209,
+      "total": 209,
+      "finished": true,
+      "seconds": 429,
+      "date": "2026-08-19T09:36:10.022Z"
+    },
+    {
+      "user": "Koren",
+      "file": "אינטלקטוערסית.txt",
+      "title": "אינטלקטוערסית",
+      "words": 231,
+      "total": 254,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-19T09:46:59.858Z"
+    },
+    {
+      "user": "Koren",
+      "file": "ברבי.txt",
+      "title": "ברבי",
+      "words": 281,
+      "total": 302,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-19T09:59:04.097Z"
+    },
+    {
+      "user": "Koren",
+      "file": "מבול.txt",
+      "title": "מבול",
+      "words": 226,
+      "total": 281,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-19T14:25:07.297Z"
+    },
+    {
+      "user": "Koren",
+      "file": "אורות כחולים.txt",
+      "title": "אורות כחולים",
+      "words": 100,
+      "total": 165,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-19T14:31:03.723Z"
+    },
+    {
+      "user": "Koren",
+      "file": "תנו לי לשתות.txt",
+      "title": "תנו לי לשתות",
+      "words": 99,
+      "total": 103,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-19T14:43:59.713Z"
+    },
+    {
+      "user": "Guest",
+      "file": "All Days Dormant.txt",
+      "title": "All Days Dormant",
+      "words": 271,
+      "total": 273,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-23T11:34:58.418Z"
+    },
+    {
+      "user": "Koren",
+      "file": "דודות לעשן.txt",
+      "title": "דודות לעשן",
+      "words": 410,
+      "total": 451,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-23T11:45:34.543Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Buried Alive.txt",
+      "title": "Buried Alive",
+      "words": 360,
+      "total": 405,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-23T12:20:52.870Z"
+    },
+    {
+      "user": "Koren",
+      "file": "עד מחר.txt",
+      "title": "עד מחר",
+      "words": 69,
+      "total": 79,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-23T12:48:46.818Z"
     }
   ]
 }

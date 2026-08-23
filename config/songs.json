@@ -299,6 +299,66 @@
       "title": "Tell Me Something I Dont Know",
       "artist": "Celeste",
       "language": "en"
+    },
+    {
+      "file": "7 Rings.txt",
+      "title": "7 Rings",
+      "artist": "Ariana Grande",
+      "language": "en"
+    },
+    {
+      "file": "זוט עני.txt",
+      "title": "זוט עני",
+      "artist": "אלה לי להב",
+      "language": "he"
+    },
+    {
+      "file": "אינטלקטוערסית.txt",
+      "title": "אינטלקטוערסית",
+      "artist": "אודיה אזולאי",
+      "language": "he"
+    },
+    {
+      "file": "ברבי.txt",
+      "title": "ברבי",
+      "artist": "סטטיק ובן אל",
+      "language": "he"
+    },
+    {
+      "file": "מבול.txt",
+      "title": "מבול",
+      "artist": "קרן פלס",
+      "language": "he"
+    },
+    {
+      "file": "אורות כחולים.txt",
+      "title": "אורות כחולים",
+      "artist": "עומר אדם",
+      "language": "he"
+    },
+    {
+      "file": "תנו לי לשתות.txt",
+      "title": "תנו לי לשתות",
+      "artist": "כנסיית השכל",
+      "language": "he"
+    },
+    {
+      "file": "All Days Dormant.txt",
+      "title": "All Days Dormant",
+      "artist": "Twenty One Pilots",
+      "language": "en"
+    },
+    {
+      "file": "Buried Alive.txt",
+      "title": "Buried Alive",
+      "artist": "Avenged Sevenfold",
+      "language": "en"
+    },
+    {
+      "file": "עד מחר.txt",
+      "title": "עד מחר",
+      "artist": "אביתר בנאי",
+      "language": "he"
     }
   ]
 }
