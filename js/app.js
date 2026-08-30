@@ -11,31 +11,61 @@ import {
   saveSong,
 } from "./storage.js";
 
-const GAME_SECONDS = 10 * 60; // 10 minute timer
+const GAME_SECONDS = 10 * 60; // 10 minute timer (classic mode only)
 const SONGS_URL = "config/songs.json";
 const USERS_URL = "config/users.json";
 const LYRICS_DIR = "config/lyrics";
 const USER_STORAGE_KEY = "guessLyrics.player";
+const MYSTERY_LANG_KEY = "guessLyrics.mysteryLanguage";
+// How many recent mystery songs to avoid repeating.
+const MYSTERY_HISTORY = 8;
 
 const state = {
   songs: [], // [{ file, title, artist, language }]
   users: [], // active player names
   user: "Guest", // currently selected player
+  mode: "classic", // "classic" | "mystery"
   current: null, // active song meta
   tokens: [], // parsed lyric tokens
   totalWords: 0, // non-unique word count
   foundWords: 0,
   timeLeft: GAME_SECONDS,
+  elapsed: 0, // counts up in mystery mode
   timerId: null,
   running: false,
   paused: false,
+  // Mystery mode
+  revealedKeys: null, // Set of distinct words the player uncovered = the score
+  titleSolved: false,
+  artistSolved: false,
+  mysteryHistory: [], // recently played files, to avoid immediate repeats
 };
 
 // ---------- DOM ----------
 const el = {
   appHeader: document.getElementById("appHeader"),
+  homeScreen: document.getElementById("homeScreen"),
+  modeClassicBtn: document.getElementById("modeClassicBtn"),
+  modeMysteryBtn: document.getElementById("modeMysteryBtn"),
   selectScreen: document.getElementById("selectScreen"),
+  selectBackBtn: document.getElementById("selectBackBtn"),
   detailScreen: document.getElementById("detailScreen"),
+  mysteryScreen: document.getElementById("mysteryScreen"),
+  mysteryBackBtn: document.getElementById("mysteryBackBtn"),
+  mysteryPoolChip: document.getElementById("mysteryPoolChip"),
+  mysteryUserSelect: document.getElementById("mysteryUserSelect"),
+  mysteryLanguage: document.getElementById("mysteryLanguage"),
+  mysteryLeaderboardList: document.getElementById("mysteryLeaderboardList"),
+  mysteryLeaderboardEmpty: document.getElementById("mysteryLeaderboardEmpty"),
+  mysteryStartBtn: document.getElementById("mysteryStartBtn"),
+  mysteryPanel: document.getElementById("mysteryPanel"),
+  mysteryTitleGuess: document.getElementById("mysteryTitleGuess"),
+  mysteryArtistGuess: document.getElementById("mysteryArtistGuess"),
+  mysteryGuessBtn: document.getElementById("mysteryGuessBtn"),
+  mysteryFeedback: document.getElementById("mysteryFeedback"),
+  mysteryReveal: document.getElementById("mysteryReveal"),
+  mysteryRevealTitle: document.getElementById("mysteryRevealTitle"),
+  mysteryRevealArtist: document.getElementById("mysteryRevealArtist"),
   challengeScreen: document.getElementById("challengeScreen"),
   userSelect: document.getElementById("userSelect"),
   songList: document.getElementById("songList"),
@@ -63,6 +93,9 @@ const el = {
   challengeTitle: document.getElementById("challengeTitle"),
   challengeArtist: document.getElementById("challengeArtist"),
   timer: document.getElementById("timer"),
+  timerLabel: document.getElementById("timerLabel"),
+  wordCostStat: document.getElementById("wordCostStat"),
+  wordCost: document.getElementById("wordCost"),
   wordsFound: document.getElementById("wordsFound"),
   progressFill: document.getElementById("progressFill"),
   guessInput: document.getElementById("guessInput"),
@@ -71,6 +104,7 @@ const el = {
   showResultsBtn: document.getElementById("showResultsBtn"),
   lyrics: document.getElementById("lyrics"),
   resultOverlay: document.getElementById("resultOverlay"),
+  confetti: document.getElementById("confetti"),
   resultTitle: document.getElementById("resultTitle"),
   resultText: document.getElementById("resultText"),
   leaderboardList: document.getElementById("leaderboardList"),
@@ -151,7 +185,21 @@ async function loadSongs() {
     console.error("Failed to load saved songs:", err);
   }
 
+  sortSongs();
   renderSongList();
+}
+
+// Alphabetical by title. A locale-aware collator keeps Hebrew and English in a
+// sensible order, and `numeric` stops "45" from sorting before "26".
+const songCollator = new Intl.Collator(["he", "en"], {
+  numeric: true,
+  sensitivity: "base",
+});
+
+function sortSongs() {
+  state.songs.sort((a, b) =>
+    songCollator.compare(a.title || "", b.title || ""),
+  );
 }
 
 async function loadLyrics(file) {
@@ -167,6 +215,30 @@ async function loadLyrics(file) {
 
 // ---------- Players ----------
 // The player list is read from config/users.json so it can be edited freely.
+// Both pre-game screens carry a picker, so they are kept in sync.
+function userSelects() {
+  return [el.userSelect, el.mysteryUserSelect].filter(Boolean);
+}
+
+function renderUserSelects() {
+  for (const select of userSelects()) {
+    select.innerHTML = "";
+    for (const name of state.users) {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      if (name === state.user) opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
+}
+
+function setUser(name) {
+  state.user = name;
+  localStorage.setItem(USER_STORAGE_KEY, name);
+  for (const select of userSelects()) select.value = name;
+}
+
 async function loadUsers() {
   try {
     const res = await fetch(USERS_URL, { cache: "no-store" });
@@ -182,14 +254,7 @@ async function loadUsers() {
   const saved = localStorage.getItem(USER_STORAGE_KEY);
   state.user = state.users.includes(saved) ? saved : state.users[0];
 
-  el.userSelect.innerHTML = "";
-  for (const name of state.users) {
-    const opt = document.createElement("option");
-    opt.value = name;
-    opt.textContent = name;
-    if (name === state.user) opt.selected = true;
-    el.userSelect.appendChild(opt);
-  }
+  renderUserSelects();
 }
 
 // Is a song laid out right-to-left (e.g. Hebrew)?
@@ -230,6 +295,7 @@ function renderSongList() {
 
 // ---------- Song detail / pre-game screen ----------
 async function openSongDetail(song) {
+  state.mode = "classic";
   state.current = song;
   state.loadedText = null;
   state.loadedFile = null;
@@ -241,8 +307,7 @@ async function openSongDetail(song) {
     : `\u{1F524} ${(song.language || "en").toUpperCase()}`;
   el.detailWords.textContent = "… words";
 
-  el.selectScreen.classList.add("hidden");
-  el.challengeScreen.classList.add("hidden");
+  hideAllScreens();
   el.detailScreen.classList.remove("hidden");
   el.appHeader.classList.remove("hidden");
 
@@ -288,6 +353,15 @@ function renderLyrics() {
 }
 
 // ---------- Game flow ----------
+// Keep the result-overlay buttons honest about what they will do next.
+function syncResultActions() {
+  const mystery = state.mode === "mystery";
+  el.playAgainBtn.textContent = mystery ? "🎲 New mystery song" : "Play again";
+  el.chooseAnotherBtn.textContent = mystery
+    ? "Back to Mystery"
+    : "Choose another song";
+}
+
 async function startChallenge(song) {
   state.current = song;
   let text;
@@ -304,17 +378,29 @@ async function startChallenge(song) {
     }
   }
 
+  const mystery = state.mode === "mystery";
+
   state.tokens = tokenize(text);
   state.totalWords = state.tokens.filter((t) => t.type === "word").length;
   state.foundWords = 0;
   state.timeLeft = GAME_SECONDS;
+  state.elapsed = 0;
   state.running = true;
   state.paused = false;
+  state.revealedKeys = new Set();
+  state.titleSolved = false;
+  state.artistSolved = false;
+  stopConfetti();
 
-  el.challengeTitle.textContent = song.title;
-  el.challengeArtist.textContent = song.artist || "";
-  el.challengeTitle.dir = "auto";
-  el.challengeArtist.dir = "auto";
+  // In mystery mode the identity of the song is the whole puzzle, so the
+  // header shows placeholders instead of the real title and artist.
+  el.challengeTitle.textContent = mystery ? "❔ Mystery Song" : song.title;
+  el.challengeArtist.textContent = mystery
+    ? "Title and artist hidden"
+    : song.artist || "";
+  el.challengeTitle.dir = mystery ? "ltr" : "auto";
+  el.challengeArtist.dir = mystery ? "ltr" : "auto";
+  el.challengeTitle.classList.toggle("mystery-hidden", mystery);
 
   // Lay out lyrics and the guess box right-to-left for RTL songs (e.g. Hebrew).
   const rtl = isRtl(song);
@@ -326,19 +412,37 @@ async function startChallenge(song) {
   el.guessInput.disabled = false;
   el.giveUpBtn.disabled = false;
   el.giveUpBtn.classList.remove("hidden");
+  // Pausing only matters when a clock is running.
   el.pauseBtn.disabled = false;
-  el.pauseBtn.classList.remove("hidden");
+  el.pauseBtn.classList.toggle("hidden", mystery);
   el.pauseOverlay.classList.add("hidden");
   el.showResultsBtn.classList.add("hidden");
+
+  // Mystery-only chrome.
+  el.mysteryPanel.classList.toggle("hidden", !mystery);
+  el.wordCostStat.classList.toggle("hidden", !mystery);
+  el.timerLabel.textContent = mystery ? "Elapsed" : "Time";
+  el.mysteryTitleGuess.value = "";
+  el.mysteryArtistGuess.value = "";
+  el.mysteryTitleGuess.disabled = false;
+  el.mysteryArtistGuess.disabled = false;
+  el.mysteryGuessBtn.disabled = false;
+  setMysteryFeedback("");
 
   renderLyrics();
   updateStats();
 
   el.appHeader.classList.add("hidden");
+  el.homeScreen.classList.add("hidden");
   el.selectScreen.classList.add("hidden");
   el.detailScreen.classList.add("hidden");
+  el.mysteryScreen.classList.add("hidden");
   el.challengeScreen.classList.remove("hidden");
   el.resultOverlay.classList.add("hidden");
+  // Always begin at the top of the song, even after a previous playthrough
+  // left the lyric box scrolled down.
+  el.lyrics.scrollTop = 0;
+  window.scrollTo(0, 0);
   el.guessInput.focus();
 
   startTimer();
@@ -348,9 +452,14 @@ function startTimer() {
   stopTimer();
   updateTimerDisplay();
   state.timerId = setInterval(() => {
-    state.timeLeft -= 1;
+    // Mystery mode counts up (no limit); classic counts down to zero.
+    if (state.mode === "mystery") {
+      state.elapsed += 1;
+    } else {
+      state.timeLeft -= 1;
+    }
     updateTimerDisplay();
-    if (state.timeLeft <= 0) endGame(false);
+    if (state.mode === "classic" && state.timeLeft <= 0) endGame(false);
   }, 1000);
 }
 
@@ -381,10 +490,13 @@ function resumeGame() {
 }
 
 function updateTimerDisplay() {
-  const m = Math.floor(state.timeLeft / 60);
-  const s = state.timeLeft % 60;
+  const mystery = state.mode === "mystery";
+  const seconds = mystery ? state.elapsed : state.timeLeft;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
   el.timer.textContent = `${m}:${String(s).padStart(2, "0")}`;
-  el.timer.classList.toggle("warning", state.timeLeft <= 30);
+  // Nothing to warn about when there is no deadline.
+  el.timer.classList.toggle("warning", !mystery && state.timeLeft <= 30);
 }
 
 function updateStats() {
@@ -392,6 +504,7 @@ function updateStats() {
   const pct =
     state.totalWords === 0 ? 0 : (state.foundWords / state.totalWords) * 100;
   el.progressFill.style.width = `${pct}%`;
+  if (state.revealedKeys) el.wordCost.textContent = state.revealedKeys.size;
 }
 
 // Reveal every not-yet-found occurrence of the guessed word.
@@ -414,10 +527,17 @@ function handleGuess(raw) {
 
   if (newlyFound > 0) {
     state.foundWords += newlyFound;
+    // In mystery mode the score is the number of distinct words uncovered,
+    // so a word only ever costs once no matter how often it repeats.
+    state.revealedKeys.add(key);
     updateStats();
     // Clear the input after a successful find so the next guess is clean.
     el.guessInput.value = "";
-    if (state.foundWords >= state.totalWords) endGame(true);
+    // Running out of lyrics ends the round, but in mystery mode it is only a
+    // win if the song was actually named along the way.
+    if (state.foundWords >= state.totalWords) {
+      endGame(state.mode === "mystery" ? state.titleSolved : true);
+    }
   }
 }
 
@@ -442,18 +562,23 @@ function endGame(won) {
     }
   }
 
+  if (state.mode === "mystery") return endMysteryGame(won);
+
   const found = state.foundWords;
   const total = state.totalWords;
   const finishedSeconds = won ? GAME_SECONDS - state.timeLeft : null;
+  el.mysteryReveal.classList.add("hidden");
   if (won) {
     el.resultTitle.textContent = "🎉 You found them all!";
     const m = Math.floor(finishedSeconds / 60);
     const s = finishedSeconds % 60;
     el.resultText.textContent = `You uncovered all ${total} words in ${m}:${String(s).padStart(2, "0")}.`;
+    launchConfetti();
   } else {
     el.resultTitle.textContent = "⏰ Time's up!";
     el.resultText.textContent = `You found ${found} of ${total} words. The rest are highlighted in red.`;
   }
+  syncResultActions();
   el.resultOverlay.classList.remove("hidden");
 
   // Persist this result, then refresh the leaderboard for the song.
@@ -461,6 +586,7 @@ function endGame(won) {
     user: state.user,
     file: state.current.file,
     title: state.current.title,
+    mode: "classic",
     words: found,
     total,
     finished: won,
@@ -468,22 +594,356 @@ function endGame(won) {
   });
 }
 
-function goToSelect() {
+// Mystery rounds end when the title is named (a win) or the player gives up.
+// The score is the number of distinct words that had to be uncovered.
+function endMysteryGame(solved) {
+  const song = state.current;
+  const cost = state.revealedKeys.size;
+
+  el.mysteryTitleGuess.disabled = true;
+  el.mysteryArtistGuess.disabled = true;
+  el.mysteryGuessBtn.disabled = true;
+
+  el.mysteryRevealTitle.textContent = song.title;
+  el.mysteryRevealArtist.textContent = song.artist ? `— ${song.artist}` : "";
+  el.mysteryReveal.classList.remove("hidden");
+
+  if (solved) {
+    el.resultTitle.textContent = "🕵️ Solved it!";
+    const wordText = cost === 1 ? "1 word" : `${cost} words`;
+    el.resultText.textContent = state.artistSolved
+      ? `Title and artist, off just ${wordText}. Outstanding.`
+      : `You named the song off just ${wordText}.`;
+    launchConfetti();
+  } else {
+    el.resultTitle.textContent = "🙈 Not this time";
+    el.resultText.textContent = `You uncovered ${cost} different words but never landed the title.`;
+  }
+  syncResultActions();
+  el.resultOverlay.classList.remove("hidden");
+
+  submitAndShowLeaderboard({
+    user: state.user,
+    file: song.file,
+    title: song.title,
+    mode: "mystery",
+    words: state.foundWords,
+    total: state.totalWords,
+    guesses: cost,
+    artistGuessed: state.artistSolved,
+    finished: solved,
+    seconds: state.elapsed,
+  });
+}
+
+// ---------- Win confetti ----------
+// Small self-contained canvas burst — no library, stops itself when done.
+const CONFETTI_COLORS = [
+  "#7c5cff",
+  "#22d3ee",
+  "#34d399",
+  "#f472b6",
+  "#fbbf24",
+  "#f87171",
+];
+let confettiFrame = null;
+
+function launchConfetti() {
+  const canvas = el.confetti;
+  if (!canvas || !canvas.getContext) return;
+  // Respect the OS "reduce motion" setting.
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  canvas.classList.add("active");
+
+  // Two side cannons plus a centre burst.
+  const pieces = [];
+  const origins = [
+    { x: width * 0.1, y: height * 0.45, spread: 1 },
+    { x: width * 0.9, y: height * 0.45, spread: -1 },
+    { x: width * 0.5, y: height * 0.25, spread: 0 },
+  ];
+  for (const origin of origins) {
+    for (let i = 0; i < 55; i += 1) {
+      const angle =
+        origin.spread === 0
+          ? Math.random() * Math.PI * 2
+          : -Math.PI / 2 + origin.spread * (Math.random() * 1.1 - 0.15);
+      const speed = 7 + Math.random() * 9;
+      pieces.push({
+        x: origin.x,
+        y: origin.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - Math.random() * 4,
+        size: 5 + Math.random() * 6,
+        color: CONFETTI_COLORS[(Math.random() * CONFETTI_COLORS.length) | 0],
+        rotation: Math.random() * Math.PI,
+        spin: (Math.random() - 0.5) * 0.35,
+        life: 1,
+        decay: 0.006 + Math.random() * 0.007,
+      });
+    }
+  }
+
+  cancelAnimationFrame(confettiFrame);
+  const step = () => {
+    ctx.clearRect(0, 0, width, height);
+    let alive = false;
+
+    for (const p of pieces) {
+      if (p.life <= 0) continue;
+      alive = true;
+      p.vy += 0.28; // gravity
+      p.vx *= 0.99; // drag
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rotation += p.spin;
+      p.life -= p.decay;
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+      ctx.fillStyle = p.color;
+      // Flatten vertically as it spins so it reads as a tumbling ribbon.
+      ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+      ctx.restore();
+    }
+
+    if (alive) {
+      confettiFrame = requestAnimationFrame(step);
+    } else {
+      stopConfetti();
+    }
+  };
+  confettiFrame = requestAnimationFrame(step);
+}
+
+function stopConfetti() {
+  cancelAnimationFrame(confettiFrame);
+  confettiFrame = null;
+  const canvas = el.confetti;
+  if (!canvas || !canvas.getContext) return;
+  canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+  canvas.classList.remove("active");
+}
+
+function hideAllScreens() {
+  el.homeScreen.classList.add("hidden");
+  el.selectScreen.classList.add("hidden");
+  el.detailScreen.classList.add("hidden");
+  el.mysteryScreen.classList.add("hidden");
+  el.challengeScreen.classList.add("hidden");
+  el.addScreen.classList.add("hidden");
+}
+
+function leaveGame() {
   stopTimer();
+  stopConfetti();
   state.running = false;
   el.resultOverlay.classList.add("hidden");
-  el.challengeScreen.classList.add("hidden");
-  el.detailScreen.classList.add("hidden");
-  el.addScreen.classList.add("hidden");
+  el.pauseOverlay.classList.add("hidden");
+}
+
+function goHome() {
+  leaveGame();
+  hideAllScreens();
+  el.appHeader.classList.remove("hidden");
+  el.homeScreen.classList.remove("hidden");
+}
+
+function goToSelect() {
+  leaveGame();
+  hideAllScreens();
   el.appHeader.classList.remove("hidden");
   el.selectScreen.classList.remove("hidden");
 }
 
+// ---------- Mystery Song mode ----------
+function openMysteryScreen() {
+  state.mode = "mystery";
+  leaveGame();
+  hideAllScreens();
+  el.appHeader.classList.remove("hidden");
+  el.mysteryScreen.classList.remove("hidden");
+
+  updateMysteryPool();
+  renderMysteryLeaderboard();
+}
+
+// Songs eligible for a mystery round, honouring the language filter.
+function mysteryPool() {
+  const lang = el.mysteryLanguage.value;
+  if (lang === "any") return state.songs;
+  return state.songs.filter(
+    (s) => String(s.language || "en").toLowerCase() === lang,
+  );
+}
+
+function updateMysteryPool() {
+  const count = mysteryPool().length;
+  el.mysteryPoolChip.textContent =
+    count === 1 ? "🎲 1 song in the pot" : `🎲 ${count} songs in the pot`;
+  el.mysteryStartBtn.disabled = count === 0;
+}
+
+function pickMysterySong() {
+  const pool = mysteryPool();
+  if (pool.length === 0) return null;
+  // Avoid the last few songs so back-to-back rounds stay fresh, unless the
+  // pool is too small to allow it.
+  const fresh = pool.filter((s) => !state.mysteryHistory.includes(s.file));
+  const from = fresh.length > 0 ? fresh : pool;
+  return from[Math.floor(Math.random() * from.length)];
+}
+
+async function startMysteryRound() {
+  const song = pickMysterySong();
+  if (!song) return;
+
+  state.mode = "mystery";
+  state.mysteryHistory.push(song.file);
+  if (state.mysteryHistory.length > MYSTERY_HISTORY) {
+    state.mysteryHistory.shift();
+  }
+  // Nothing is preloaded for a mystery round — force a fresh read.
+  state.loadedText = null;
+  state.loadedFile = null;
+  await startChallenge(song);
+}
+
+function setMysteryFeedback(message, tone = "info") {
+  el.mysteryFeedback.textContent = message;
+  el.mysteryFeedback.dataset.tone = tone;
+  el.mysteryFeedback.classList.toggle("hidden", !message);
+}
+
+// Loose comparison for titles and artist names: case, accents, Hebrew niqqud,
+// punctuation and bracketed extras like "(Remastered)" are all ignored.
+function normalizeName(text) {
+  return String(text || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // latin accents
+    .replace(/[\u0591-\u05C7]/g, "") // hebrew niqqud / cantillation
+    .replace(/[’‘`]/g, "'")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Every spelling of the answer we are willing to accept.
+function acceptedForms(name) {
+  const forms = new Set();
+  const raw = String(name || "");
+  const add = (value) => {
+    const norm = normalizeName(value);
+    if (norm) forms.add(norm);
+  };
+  add(raw);
+  add(raw.replace(/[([{].*?[)\]}]/g, " ")); // without "(Live)", "[Remix]", …
+  add(raw.replace(/\s*-\s*.*$/, "")); // without a " - Radio Edit" suffix
+  for (const form of [...forms]) {
+    if (form.startsWith("the ")) forms.add(form.slice(4));
+  }
+  return [...forms];
+}
+
+// Standard Levenshtein, capped so a long wrong answer bails out early.
+function editDistance(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i += 1) {
+    const row = [i];
+    let best = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      row[j] = Math.min(row[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+      if (row[j] < best) best = row[j];
+    }
+    if (best > max) return max + 1;
+    prev = row;
+  }
+  return prev[b.length];
+}
+
+// A guess counts if it matches any accepted form outright, or is within a
+// typo or two of one — nobody should lose on a missing letter.
+function namesMatch(guess, answer) {
+  const g = normalizeName(guess);
+  if (!g) return false;
+  for (const form of acceptedForms(answer)) {
+    if (g === form) return true;
+    const tolerance = form.length >= 12 ? 2 : form.length >= 6 ? 1 : 0;
+    if (tolerance && editDistance(g, form, tolerance) <= tolerance) return true;
+  }
+  return false;
+}
+
+// Artists are matched more leniently: featured-artist lists and band prefixes
+// mean a containment check is usually the fair call.
+function artistMatches(guess, answer) {
+  if (namesMatch(guess, answer)) return true;
+  const g = normalizeName(guess);
+  const a = normalizeName(answer);
+  if (g.length < 3 || a.length < 3) return false;
+  return a.includes(g) || g.includes(a);
+}
+
+function submitMysteryGuess() {
+  if (!state.running || state.mode !== "mystery") return;
+
+  const titleGuess = el.mysteryTitleGuess.value.trim();
+  const artistGuess = el.mysteryArtistGuess.value.trim();
+  if (!titleGuess && !artistGuess) {
+    setMysteryFeedback(
+      "Type a song name (and the artist, if you can).",
+      "warn",
+    );
+    return;
+  }
+
+  const song = state.current;
+  // The artist is a bonus — it never ends the round on its own, but a correct
+  // one sticks so it can be credited when the title lands.
+  if (artistGuess && artistMatches(artistGuess, song.artist)) {
+    state.artistSolved = true;
+  }
+
+  if (titleGuess && namesMatch(titleGuess, song.title)) {
+    state.titleSolved = true;
+    endGame(true);
+    return;
+  }
+
+  if (!titleGuess) {
+    setMysteryFeedback(
+      state.artistSolved
+        ? "Right artist! Now name the song."
+        : "That artist isn't it — keep digging.",
+      state.artistSolved ? "ok" : "warn",
+    );
+    return;
+  }
+
+  setMysteryFeedback(
+    state.artistSolved
+      ? "Artist is right, but that's not the title. Try again."
+      : "Not it. Uncover another word and have another go.",
+    "warn",
+  );
+}
+
 // ---------- Add a custom song ----------
 function openAddSong() {
-  el.selectScreen.classList.add("hidden");
-  el.detailScreen.classList.add("hidden");
-  el.challengeScreen.classList.add("hidden");
+  hideAllScreens();
   el.appHeader.classList.remove("hidden");
   el.addScreen.classList.remove("hidden");
 
@@ -531,7 +991,12 @@ async function submitAndShowLeaderboard(result) {
   } catch (err) {
     console.error("Failed to save score:", err);
   }
-  await renderLeaderboard(result.file, savedRecord);
+  await renderLeaderboard(result.file, result.mode, savedRecord);
+}
+
+// Records saved before mystery mode existed have no `mode` field.
+function scoreMode(score) {
+  return score.mode === "mystery" ? "mystery" : "classic";
 }
 
 // Best score first: more words wins; ties broken by finishing, then faster time.
@@ -543,31 +1008,61 @@ function compareScores(a, b) {
   return new Date(b.date) - new Date(a.date);
 }
 
+// Mystery ranks the other way round: solving the song at all comes first, then
+// the fewest words revealed, then naming the artist too, then the quicker run.
+function compareMysteryScores(a, b) {
+  if (a.finished !== b.finished) return a.finished ? -1 : 1;
+  const aCost = a.guesses ?? Infinity;
+  const bCost = b.guesses ?? Infinity;
+  if (aCost !== bCost) return aCost - bCost;
+  if (a.artistGuessed !== b.artistGuessed) return a.artistGuessed ? -1 : 1;
+  return (a.seconds ?? Infinity) - (b.seconds ?? Infinity);
+}
+
 function formatSeconds(sec) {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-async function renderLeaderboard(file, savedRecord) {
-  const scores = await fetchSongScores(file);
+async function renderLeaderboard(file, mode, savedRecord) {
+  const scores = await fetchSongScores(file, mode);
   fillLeaderboard(el.leaderboardList, el.leaderboardEmpty, scores, {
     limit: 10,
+    mode,
     savedRecord,
   });
 }
 
 async function renderDetailLeaderboard(file) {
-  const scores = await fetchSongScores(file);
+  const scores = await fetchSongScores(file, "classic");
   fillLeaderboard(el.detailLeaderboardList, el.detailLeaderboardEmpty, scores, {
     limit: 5,
+    mode: "classic",
   });
 }
 
-async function fetchSongScores(file) {
+// The mystery board spans every song — the challenge is the same regardless of
+// which track came up, so one global ranking is the fair comparison.
+async function renderMysteryLeaderboard() {
+  let scores = [];
+  try {
+    scores = (await getScores()).filter((s) => scoreMode(s) === "mystery");
+  } catch (err) {
+    console.error("Failed to load leaderboard:", err);
+  }
+  fillLeaderboard(
+    el.mysteryLeaderboardList,
+    el.mysteryLeaderboardEmpty,
+    scores,
+    { limit: 10, mode: "mystery", showSong: true },
+  );
+}
+
+async function fetchSongScores(file, mode) {
   try {
     const scores = await getScores();
-    return scores.filter((s) => s.file === file);
+    return scores.filter((s) => s.file === file && scoreMode(s) === mode);
   } catch (err) {
     console.error("Failed to load leaderboard:", err);
   }
@@ -576,8 +1071,14 @@ async function fetchSongScores(file) {
 
 const MEDALS = ["\u{1F947}", "\u{1F948}", "\u{1F949}"]; // gold, silver, bronze
 
-function fillLeaderboard(listEl, emptyEl, scores, { limit, savedRecord }) {
-  scores.sort(compareScores);
+function fillLeaderboard(
+  listEl,
+  emptyEl,
+  scores,
+  { limit, mode = "classic", savedRecord, showSong = false },
+) {
+  const mystery = mode === "mystery";
+  scores.sort(mystery ? compareMysteryScores : compareScores);
   const top = scores.slice(0, limit);
 
   listEl.innerHTML = "";
@@ -601,11 +1102,34 @@ function fillLeaderboard(listEl, emptyEl, scores, { limit, savedRecord }) {
     who.className = "lb-user";
     who.textContent = s.user || "Guest";
     main.appendChild(who);
+
     const score = document.createElement("span");
     score.className = "lb-score";
-    score.textContent = `${s.words}/${s.total}`;
+    if (mystery) {
+      const cost = s.guesses ?? 0;
+      score.textContent = s.finished
+        ? `${cost} ${cost === 1 ? "word" : "words"}`
+        : "unsolved";
+      if (!s.finished) score.classList.add("lb-unsolved");
+    } else {
+      score.textContent = `${s.words}/${s.total}`;
+    }
     main.appendChild(score);
-    if (s.finished && s.seconds != null) {
+
+    if (mystery && s.finished && s.artistGuessed) {
+      const bonus = document.createElement("span");
+      bonus.className = "lb-time lb-finished";
+      bonus.textContent = "+ artist";
+      main.appendChild(bonus);
+    }
+    if (mystery && showSong && s.title) {
+      const songName = document.createElement("span");
+      songName.className = "lb-song";
+      songName.dir = "auto";
+      songName.textContent = s.title;
+      main.appendChild(songName);
+    }
+    if (!mystery && s.finished && s.seconds != null) {
       const time = document.createElement("span");
       time.className = "lb-time lb-finished";
       time.textContent = `✓ ${formatSeconds(s.seconds)}`;
@@ -624,24 +1148,52 @@ function fillLeaderboard(listEl, emptyEl, scores, { limit, savedRecord }) {
 }
 
 // ---------- Events ----------
+el.modeClassicBtn.addEventListener("click", () => {
+  state.mode = "classic";
+  goToSelect();
+});
+el.modeMysteryBtn.addEventListener("click", openMysteryScreen);
+el.selectBackBtn.addEventListener("click", goHome);
 el.songSearch.addEventListener("input", renderSongList);
 el.addSongBtn.addEventListener("click", openAddSong);
 el.addBackBtn.addEventListener("click", goToSelect);
 el.addCancelBtn.addEventListener("click", goToSelect);
 el.addSongForm.addEventListener("submit", submitNewSong);
-el.userSelect.addEventListener("change", (e) => {
-  state.user = e.target.value;
-  localStorage.setItem(USER_STORAGE_KEY, state.user);
-});
+for (const select of userSelects()) {
+  select.addEventListener("change", (e) => setUser(e.target.value));
+}
 el.guessInput.addEventListener("input", (e) => handleGuess(e.target.value));
 el.pauseBtn.addEventListener("click", pauseGame);
 el.continueBtn.addEventListener("click", resumeGame);
 el.giveUpBtn.addEventListener("click", () => endGame(false));
 el.detailBackBtn.addEventListener("click", goToSelect);
 el.startGameBtn.addEventListener("click", () => {
-  if (state.current) startChallenge(state.current);
+  if (state.current) {
+    state.mode = "classic";
+    startChallenge(state.current);
+  }
 });
+
+// ---------- Events: Mystery Song ----------
+el.mysteryBackBtn.addEventListener("click", goHome);
+el.mysteryStartBtn.addEventListener("click", startMysteryRound);
+el.mysteryLanguage.addEventListener("change", () => {
+  localStorage.setItem(MYSTERY_LANG_KEY, el.mysteryLanguage.value);
+  updateMysteryPool();
+});
+el.mysteryGuessBtn.addEventListener("click", submitMysteryGuess);
+for (const input of [el.mysteryTitleGuess, el.mysteryArtistGuess]) {
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submitMysteryGuess();
+    }
+  });
+}
+
 el.playAgainBtn.addEventListener("click", () => {
+  // "Play again" means a brand new hidden song in mystery mode.
+  if (state.mode === "mystery") return startMysteryRound();
   if (state.current) startChallenge(state.current);
 });
 // Close the overlay to reveal the finished lyrics behind it (missed words in red).
@@ -652,8 +1204,14 @@ el.viewLyricsBtn.addEventListener("click", () => {
 el.showResultsBtn.addEventListener("click", () => {
   el.resultOverlay.classList.remove("hidden");
 });
-el.chooseAnotherBtn.addEventListener("click", goToSelect);
+el.chooseAnotherBtn.addEventListener("click", () => {
+  if (state.mode === "mystery") return openMysteryScreen();
+  goToSelect();
+});
 
 // ---------- Init ----------
+el.mysteryLanguage.value =
+  localStorage.getItem(MYSTERY_LANG_KEY) || el.mysteryLanguage.value;
+
 loadUsers();
-loadSongs();
+loadSongs().then(updateMysteryPool);

@@ -13,9 +13,29 @@
       <p class="tagline">Type words to uncover the hidden lyrics before the clock runs out.</p>
     </header>
 
+    <!-- Mode picker (landing screen) -->
+    <section id="homeScreen" class="screen">
+      <h2 class="mode-heading">Choose your mode</h2>
+      <div class="mode-grid">
+        <button id="modeClassicBtn" class="mode-card mode-classic" type="button">
+          <span class="mode-emoji">🎤</span>
+          <span class="mode-name">Classic</span>
+          <span class="mode-desc">Pick a song you know and uncover every single word before the clock runs out.</span>
+          <span class="mode-tag">⏱ 10 minute race</span>
+        </button>
+        <button id="modeMysteryBtn" class="mode-card mode-mystery" type="button">
+          <span class="mode-emoji">🕵️</span>
+          <span class="mode-name">Mystery Song</span>
+          <span class="mode-desc">The title and artist are hidden. No timer — reveal as few words as you can, then name the track.</span>
+          <span class="mode-tag">🏅 Fewest words wins</span>
+        </button>
+      </div>
+    </section>
+
     <!-- Song selection screen -->
-    <section id="selectScreen" class="screen">
+    <section id="selectScreen" class="screen hidden">
       <div class="select-head">
+        <button id="selectBackBtn" class="btn btn-ghost" type="button">← Modes</button>
         <h2>Choose a song</h2>
         <button id="addSongBtn" class="btn btn-secondary" type="button">➕ Add song</button>
       </div>
@@ -46,6 +66,7 @@
             <option value="he">Hebrew (עברית)</option>
           </select>
         </label>
+
         <label class="add-field">
           <span>Lyrics</span>
           <textarea id="addLyrics" rows="12" dir="auto" placeholder="Paste the full lyrics here…" required></textarea>
@@ -85,6 +106,48 @@
       <button id="startGameBtn" class="btn btn-primary btn-block" type="button">▶ Start game</button>
     </section>
 
+    <!-- Mystery Song pre-game screen -->
+    <section id="mysteryScreen" class="screen hidden">
+      <button id="mysteryBackBtn" class="btn btn-ghost" type="button">← Modes</button>
+      <div class="mystery-hero">
+        <span class="mystery-hero-emoji">🕵️</span>
+        <h2>Mystery Song</h2>
+        <p class="muted">
+          A random track from the library, with its title and artist blacked out.
+          There is no timer — the only thing that counts is how few words you have
+          to reveal before you can name it.
+        </p>
+      </div>
+
+      <div class="detail-meta">
+        <span class="chip" id="mysteryPoolChip">… songs</span>
+        <span class="chip">⏱ No time limit</span>
+        <span class="chip">🏅 Fewest words wins</span>
+      </div>
+
+      <div class="user-row detail-user">
+        <label for="mysteryUserSelect">👤 Who's playing?</label>
+        <select id="mysteryUserSelect" aria-label="Choose player"></select>
+      </div>
+
+      <label class="add-field mystery-filter">
+        <span>Language</span>
+        <select id="mysteryLanguage">
+          <option value="any">Any language</option>
+          <option value="en">English</option>
+          <option value="he">Hebrew (עברית)</option>
+        </select>
+      </label>
+
+      <div class="leaderboard">
+        <h3 class="leaderboard-title">🏆 Sharpest ears <span class="muted">· fewest words</span></h3>
+        <ol id="mysteryLeaderboardList" class="leaderboard-list"></ol>
+        <p id="mysteryLeaderboardEmpty" class="muted hidden">No mystery solves yet — be the first!</p>
+      </div>
+
+      <button id="mysteryStartBtn" class="btn btn-primary btn-block" type="button">🎲 Start mystery round</button>
+    </section>
+
     <!-- Challenge screen -->
     <section id="challengeScreen" class="screen hidden">
       <div class="challenge-topbar">
@@ -94,8 +157,12 @@
         </div>
         <div class="stats">
           <div class="stat">
-            <span class="stat-label">Time</span>
+            <span class="stat-label" id="timerLabel">Time</span>
             <span class="stat-value" id="timer">10:00</span>
+          </div>
+          <div class="stat hidden" id="wordCostStat">
+            <span class="stat-label">Words used</span>
+            <span class="stat-value" id="wordCost">0</span>
           </div>
           <div class="stat">
             <span class="stat-label">Found</span>
@@ -106,6 +173,26 @@
 
       <div class="progress-track" aria-hidden="true">
         <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <!-- Mystery mode only: name the hidden song. -->
+      <div id="mysteryPanel" class="mystery-panel hidden">
+        <div class="mystery-panel-head">
+          <span class="mystery-panel-title">🕵️ Name that song</span>
+          <small>Every new word you uncover adds to your score — guess early, guess low.</small>
+        </div>
+        <div class="mystery-panel-row">
+          <label class="add-field">
+            <span>Song name</span>
+            <input id="mysteryTitleGuess" type="text" maxlength="200" autocomplete="off" dir="auto" placeholder="What's it called?" />
+          </label>
+          <label class="add-field">
+            <span>Artist</span>
+            <input id="mysteryArtistGuess" type="text" maxlength="200" autocomplete="off" dir="auto" placeholder="Who sings it?" />
+          </label>
+          <button id="mysteryGuessBtn" class="btn" type="button">Lock in</button>
+        </div>
+        <p id="mysteryFeedback" class="mystery-feedback hidden"></p>
       </div>
 
       <div class="input-row">
@@ -123,6 +210,11 @@
       <div class="overlay-card">
         <h2 id="resultTitle">Time!</h2>
         <p id="resultText"></p>
+        <div id="mysteryReveal" class="mystery-reveal hidden">
+          <span class="mystery-reveal-label">The song was</span>
+          <strong id="mysteryRevealTitle" dir="auto"></strong>
+          <span id="mysteryRevealArtist" class="mystery-reveal-artist" dir="auto"></span>
+        </div>
         <div class="leaderboard" id="leaderboard">
           <h3 class="leaderboard-title">🏆 Leaderboard <span id="leaderboardSong" class="muted"></span></h3>
           <ol id="leaderboardList" class="leaderboard-list"></ol>
@@ -146,6 +238,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Win celebration; sits above the overlays and ignores pointer events. -->
+  <canvas id="confetti" class="confetti-canvas" aria-hidden="true"></canvas>
 
   <script src="js/app.js" type="module"></script>
 </body>

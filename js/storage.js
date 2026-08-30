@@ -60,8 +60,17 @@ function sanitizeScore(entry) {
     user: String(entry.user || "Guest").slice(0, 60),
     file: String(entry.file || "").slice(0, 200),
     title: String(entry.title || "").slice(0, 200),
-    words: Number.isFinite(entry.words) ? Math.max(0, Math.floor(entry.words)) : 0,
-    total: Number.isFinite(entry.total) ? Math.max(0, Math.floor(entry.total)) : 0,
+    mode: entry.mode === "mystery" ? "mystery" : "classic",
+    words: Number.isFinite(entry.words)
+      ? Math.max(0, Math.floor(entry.words))
+      : 0,
+    total: Number.isFinite(entry.total)
+      ? Math.max(0, Math.floor(entry.total))
+      : 0,
+    guesses: Number.isFinite(entry.guesses)
+      ? Math.max(0, Math.floor(entry.guesses))
+      : null,
+    artistGuessed: Boolean(entry.artistGuessed),
     finished: Boolean(entry.finished),
     seconds: Number.isFinite(entry.seconds)
       ? Math.max(0, Math.floor(entry.seconds))
@@ -148,7 +157,9 @@ export async function saveSong({ title, artist, language, lyrics }) {
     file: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.txt`,
     title: String(title).slice(0, 200),
     artist: String(artist || "").slice(0, 200),
-    language: String(language || "en").toLowerCase().slice(0, 10),
+    language: String(language || "en")
+      .toLowerCase()
+      .slice(0, 10),
     local: true,
   };
   const text = String(lyrics).replace(/\r\n/g, "\n").slice(0, 50_000);

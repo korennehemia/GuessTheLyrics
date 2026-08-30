@@ -359,6 +359,66 @@
       "title": "עד מחר",
       "artist": "אביתר בנאי",
       "language": "he"
+    },
+    {
+      "file": "אף אחד לא בא לי.txt",
+      "title": "אף אחד לא בא לי",
+      "artist": "קרולינה",
+      "language": "he"
+    },
+    {
+      "file": "Last Night On Earth.txt",
+      "title": "Last Night On Earth",
+      "artist": "Green Day",
+      "language": "en"
+    },
+    {
+      "file": "כלבויניקית.txt",
+      "title": "כלבויניקית",
+      "artist": "איזי",
+      "language": "en"
+    },
+    {
+      "file": "Temper City - Self Aware.txt",
+      "title": "Temper City - Self Aware",
+      "artist": "Temper City",
+      "language": "en"
+    },
+    {
+      "file": "Love On The Brain.txt",
+      "title": "Love On The Brain",
+      "artist": "Rihanna",
+      "language": "en"
+    },
+    {
+      "file": "just the two of us.txt",
+      "title": "just the two of us",
+      "artist": "bill withers",
+      "language": "en"
+    },
+    {
+      "file": "Lose Yourself.txt",
+      "title": "Lose Yourself",
+      "artist": "Eminem",
+      "language": "en"
+    },
+    {
+      "file": "California Gurls.txt",
+      "title": "California Gurls",
+      "artist": "Katy Perry",
+      "language": "en"
+    },
+    {
+      "file": "I'm Not The Only One.txt",
+      "title": "I'm Not The Only One",
+      "artist": "Sam Smith",
+      "language": "en"
+    },
+    {
+      "file": "Bring Me To Life.txt",
+      "title": "Bring Me To Life",
+      "artist": "Evanessence",
+      "language": "en"
     }
   ]
 }
