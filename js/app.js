@@ -22,11 +22,22 @@ const MYSTERY_LANG_KEY = "guessLyrics.mysteryLanguage";
 // How many recent mystery songs to avoid repeating.
 const MYSTERY_HISTORY = 8;
 
+// ---------- Pop Quiz ----------
+const QUIZ_ROUNDS_KEY = "guessLyrics.quizRounds";
+const QUIZ_LANG_KEY = "guessLyrics.quizLanguage";
+const QUIZ_PLAYERS_KEY = "guessLyrics.quizPlayers";
+const QUIZ_POINTS = 10; // per correct answer
+const QUIZ_OPTIONS = 3; // songs offered per question
+// How long the answer stays on screen before the next player is up, and how
+// long the between-rounds scoreboard lingers.
+const QUIZ_ANSWER_MS = 2400;
+const QUIZ_STANDINGS_MS = 4000;
+
 const state = {
   songs: [], // [{ file, title, artist, language }]
   users: [], // active player names
   user: "Guest", // currently selected player
-  mode: "classic", // "classic" | "mystery"
+  mode: "classic", // "classic" | "mystery" | "quiz"
   current: null, // active song meta
   tokens: [], // parsed lyric tokens
   totalWords: 0, // non-unique word count
@@ -41,6 +52,17 @@ const state = {
   titleSolved: false,
   artistSolved: false,
   mysteryHistory: [], // recently played files, to avoid immediate repeats
+  // Pop Quiz
+  quiz: {
+    players: [], // names, in turn order
+    scores: {}, // name -> points
+    rounds: 5,
+    round: 1,
+    turn: 0, // index into players
+    question: null, // { song, line, options, answered }
+    usedFiles: [], // songs already used as an answer
+    timeoutId: null, // pending auto-advance
+  },
 };
 
 // ---------- DOM ----------
@@ -74,7 +96,6 @@ const el = {
   songListEmpty: document.getElementById("songListEmpty"),
   songSearch: document.getElementById("songSearch"),
   modeLibraryBtn: document.getElementById("modeLibraryBtn"),
-  libraryTag: document.getElementById("libraryTag"),
   libraryScreen: document.getElementById("libraryScreen"),
   libraryBackBtn: document.getElementById("libraryBackBtn"),
   libraryAddBtn: document.getElementById("libraryAddBtn"),
@@ -125,6 +146,34 @@ const el = {
   viewLyricsBtn: document.getElementById("viewLyricsBtn"),
   pauseOverlay: document.getElementById("pauseOverlay"),
   continueBtn: document.getElementById("continueBtn"),
+  // Pop Quiz
+  modeQuizBtn: document.getElementById("modeQuizBtn"),
+  quizScreen: document.getElementById("quizScreen"),
+  quizBackBtn: document.getElementById("quizBackBtn"),
+  quizSummaryChip: document.getElementById("quizSummaryChip"),
+  quizPoolChip: document.getElementById("quizPoolChip"),
+  quizRounds: document.getElementById("quizRounds"),
+  quizLanguage: document.getElementById("quizLanguage"),
+  quizPlayerList: document.getElementById("quizPlayerList"),
+  quizPlayersHint: document.getElementById("quizPlayersHint"),
+  quizStartBtn: document.getElementById("quizStartBtn"),
+  quizGameScreen: document.getElementById("quizGameScreen"),
+  quizRoundChip: document.getElementById("quizRoundChip"),
+  quizQuitBtn: document.getElementById("quizQuitBtn"),
+  quizScoreboard: document.getElementById("quizScoreboard"),
+  quizTurn: document.getElementById("quizTurn"),
+  quizTurnName: document.getElementById("quizTurnName"),
+  quizLine: document.getElementById("quizLine"),
+  quizOptions: document.getElementById("quizOptions"),
+  quizFeedback: document.getElementById("quizFeedback"),
+  quizOverlay: document.getElementById("quizOverlay"),
+  quizOverlayTitle: document.getElementById("quizOverlayTitle"),
+  quizOverlayText: document.getElementById("quizOverlayText"),
+  quizStandings: document.getElementById("quizStandings"),
+  quizContinueBtn: document.getElementById("quizContinueBtn"),
+  quizOverlayActions: document.getElementById("quizOverlayActions"),
+  quizExitBtn: document.getElementById("quizExitBtn"),
+  quizAgainBtn: document.getElementById("quizAgainBtn"),
 };
 
 // ---------- Text helpers ----------
@@ -210,7 +259,6 @@ async function loadSongs() {
   sortSongs();
   renderSongList();
   renderLibrary();
-  updateLibraryTag();
 }
 
 // Everything a game is allowed to pick from.
@@ -283,7 +331,22 @@ async function loadUsers() {
   const saved = localStorage.getItem(USER_STORAGE_KEY);
   state.user = state.users.includes(saved) ? saved : state.users[0];
 
+  restoreQuizPlayers();
   renderUserSelects();
+}
+
+// The quiz line-up is remembered between sessions; anyone who has since left
+// users.json is dropped. With nothing saved yet, everybody is in.
+function restoreQuizPlayers() {
+  let saved = null;
+  try {
+    saved = JSON.parse(localStorage.getItem(QUIZ_PLAYERS_KEY) || "null");
+  } catch {
+    saved = null;
+  }
+  state.quiz.players = Array.isArray(saved)
+    ? saved.filter((name) => state.users.includes(name))
+    : [...state.users];
 }
 
 // Is a song laid out right-to-left (e.g. Hebrew)?
@@ -310,6 +373,7 @@ function renderSongList() {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "song-card";
+    btn.title = song.artist ? `${song.title} — ${song.artist}` : song.title;
     btn.innerHTML = `
       <span class="title" dir="auto"></span>
       <span class="artist" dir="auto"></span>
@@ -763,14 +827,19 @@ function hideAllScreens() {
   el.challengeScreen.classList.add("hidden");
   el.addScreen.classList.add("hidden");
   el.libraryScreen.classList.add("hidden");
+  el.quizScreen.classList.add("hidden");
+  el.quizGameScreen.classList.add("hidden");
 }
 
 function leaveGame() {
   stopTimer();
   stopConfetti();
+  clearTimeout(state.quiz.timeoutId);
+  state.quiz.timeoutId = null;
   state.running = false;
   el.resultOverlay.classList.add("hidden");
   el.pauseOverlay.classList.add("hidden");
+  el.quizOverlay.classList.add("hidden");
 }
 
 function goHome() {
@@ -796,12 +865,6 @@ function goToLibrary() {
   renderLibrary();
 }
 
-function updateLibraryTag() {
-  const total = state.songs.length;
-  el.libraryTag.textContent =
-    total === 1 ? "\u{1F3B6} 1 song" : `\u{1F3B6} ${total} songs`;
-}
-
 // The library lists everything, hidden songs included — that is the whole
 // point of it, since hiding is reversible.
 function renderLibrary() {
@@ -816,7 +879,7 @@ function renderLibrary() {
   const hiddenCount = state.songs.filter((s) => s.hidden).length;
   const activeCount = state.songs.length - hiddenCount;
   el.libraryActiveChip.textContent = `\u{1F3A4} ${activeCount} in play`;
-  el.libraryHiddenChip.textContent = `\u{1F648} ${hiddenCount} hidden`;
+  el.libraryHiddenChip.textContent = `\u{1F6AB} ${hiddenCount} disabled`;
 
   el.libraryList.innerHTML = "";
   el.libraryEmpty.classList.toggle("hidden", matches.length > 0);
@@ -827,6 +890,7 @@ function renderLibrary() {
   for (const song of matches) {
     const li = document.createElement("li");
     li.className = song.hidden ? "library-item is-hidden" : "library-item";
+    li.title = song.artist ? `${song.title} — ${song.artist}` : song.title;
 
     const info = document.createElement("div");
     info.className = "library-info";
@@ -846,14 +910,19 @@ function renderLibrary() {
     if (song.hidden) {
       const badge = document.createElement("span");
       badge.className = "library-badge";
-      badge.textContent = "Hidden from games";
+      badge.textContent = "Disabled in games";
       info.appendChild(badge);
     }
 
     const toggle = document.createElement("button");
     toggle.type = "button";
-    toggle.className = song.hidden ? "btn btn-secondary" : "btn btn-ghost";
-    toggle.textContent = song.hidden ? "\u{1F441} Unhide" : "\u{1F648} Hide";
+    toggle.className = song.hidden ? "library-toggle is-on" : "library-toggle";
+    toggle.textContent = "\u{1F6AB}";
+    toggle.title = song.hidden
+      ? `Put “${song.title}” back into games`
+      : `Disable “${song.title}” in games`;
+    toggle.setAttribute("aria-label", toggle.title);
+    toggle.setAttribute("aria-pressed", String(Boolean(song.hidden)));
     toggle.addEventListener("click", () => toggleSongHidden(song, toggle));
 
     li.append(info, toggle);
@@ -1051,7 +1120,422 @@ function submitMysteryGuess() {
   );
 }
 
+// ---------- Pop Quiz ----------
+// A pass-the-device group game: every player, in turn, gets one line from a
+// song and three songs it might have come from. The decoys always share the
+// answer's language, so the choice is never given away by the alphabet.
+const quiz = state.quiz;
+const quizLyricsCache = new Map();
+
+function shuffle(items) {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+function songLanguage(song) {
+  return String(song.language || "en").toLowerCase();
+}
+
+function openQuizScreen() {
+  state.mode = "quiz";
+  leaveGame();
+  hideAllScreens();
+  el.appHeader.classList.remove("hidden");
+  el.quizScreen.classList.remove("hidden");
+
+  renderQuizPlayers();
+  updateQuizSetup();
+}
+
+// Songs the quiz may draw from, honouring the language filter.
+function quizPool() {
+  const lang = el.quizLanguage.value;
+  const pool = playableSongs();
+  if (lang === "any") return pool;
+  return pool.filter((s) => songLanguage(s) === lang);
+}
+
+// A song can only be an answer if there are two more songs in its language to
+// stand next to it, otherwise the options would give the game away.
+function quizAnswerPool() {
+  const pool = quizPool();
+  const counts = new Map();
+  for (const song of pool) {
+    const lang = songLanguage(song);
+    counts.set(lang, (counts.get(lang) || 0) + 1);
+  }
+  return pool.filter((s) => (counts.get(songLanguage(s)) || 0) >= QUIZ_OPTIONS);
+}
+
+function renderQuizPlayers() {
+  el.quizPlayerList.innerHTML = "";
+  for (const name of state.users) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    const picked = quiz.players.includes(name);
+    chip.className = picked ? "quiz-player is-picked" : "quiz-player";
+    chip.setAttribute("aria-pressed", String(picked));
+    chip.dir = "auto";
+    chip.textContent = picked
+      ? `${quiz.players.indexOf(name) + 1}. ${name}`
+      : name;
+    chip.addEventListener("click", () => toggleQuizPlayer(name));
+    el.quizPlayerList.appendChild(chip);
+  }
+}
+
+function toggleQuizPlayer(name) {
+  const at = quiz.players.indexOf(name);
+  if (at === -1) quiz.players.push(name);
+  else quiz.players.splice(at, 1);
+  localStorage.setItem(QUIZ_PLAYERS_KEY, JSON.stringify(quiz.players));
+  renderQuizPlayers();
+  updateQuizSetup();
+}
+
+function updateQuizSetup() {
+  const rounds = Number(el.quizRounds.value) || 5;
+  const players = quiz.players.length;
+  const questions = rounds * players;
+  const pool = quizAnswerPool().length;
+
+  el.quizSummaryChip.textContent = players
+    ? `\u{1F5F3} ${questions} question${questions === 1 ? "" : "s"}`
+    : "\u{1F5F3} Pick your players";
+  el.quizPoolChip.textContent = `\u{1F3B6} ${pool} song${pool === 1 ? "" : "s"} in the mix`;
+
+  const ready = players > 0 && pool >= QUIZ_OPTIONS;
+  el.quizStartBtn.disabled = !ready;
+  if (players === 0) {
+    el.quizPlayersHint.textContent = "Pick at least one player to get going.";
+  } else if (pool < QUIZ_OPTIONS) {
+    el.quizPlayersHint.textContent =
+      "Not enough songs share a language for a fair round — try another language filter.";
+  } else {
+    el.quizPlayersHint.textContent =
+      "Everyone plays one question per round, in this order.";
+  }
+}
+
+function startQuiz() {
+  if (el.quizStartBtn.disabled) return;
+
+  state.mode = "quiz";
+  quiz.rounds = Number(el.quizRounds.value) || 5;
+  quiz.round = 1;
+  quiz.turn = 0;
+  quiz.question = null;
+  quiz.usedFiles = [];
+  quiz.scores = {};
+  for (const name of quiz.players) quiz.scores[name] = 0;
+
+  leaveGame();
+  hideAllScreens();
+  el.appHeader.classList.add("hidden");
+  el.quizGameScreen.classList.remove("hidden");
+  nextQuizQuestion();
+}
+
+async function loadQuizLyrics(file) {
+  if (quizLyricsCache.has(file)) return quizLyricsCache.get(file);
+  const text = await loadLyrics(file);
+  quizLyricsCache.set(file, text);
+  return text;
+}
+
+// Words from the title are off limits inside a clue line — spotting the title
+// in the lyric would turn the question into a freebie.
+function titleWords(title) {
+  const words = String(title || "").match(/[\p{L}\p{N}']+/gu) || [];
+  return new Set(words.map(normalize).filter((w) => w.length >= 3));
+}
+
+// Pick a line that is long enough to be a real clue but still one breath long,
+// preferring lines that don't quote the title.
+function pickQuizLine(text, title) {
+  const banned = titleWords(title);
+  const clean = [];
+  const withTitle = [];
+  const seen = new Set();
+
+  for (const raw of String(text).replace(/\r\n/g, "\n").split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    // Section markers such as "[Chorus]" or "(פזמון)".
+    if (/^[[(\uFF08].*[\])\uFF09]$/.test(line)) continue;
+
+    const words = line.match(/[\p{L}\p{N}']+/gu) || [];
+    if (words.length < 4 || words.length > 14) continue;
+
+    const key = normalize(line);
+    if (seen.has(key)) continue; // a repeated hook shouldn't get extra chances
+    seen.add(key);
+
+    if (words.some((w) => banned.has(normalize(w)))) withTitle.push(line);
+    else clean.push(line);
+  }
+
+  const from = clean.length ? clean : withTitle;
+  if (!from.length) return null;
+  return from[Math.floor(Math.random() * from.length)];
+}
+
+async function buildQuizQuestion() {
+  const pool = quizAnswerPool();
+  if (pool.length < QUIZ_OPTIONS) return null;
+
+  const fresh = pool.filter((s) => !quiz.usedFiles.includes(s.file));
+  const candidates = shuffle(fresh.length ? fresh : pool);
+
+  // Some songs have no usable line (very short, or every line quotes the
+  // title), so try a handful before giving up.
+  for (const song of candidates.slice(0, 10)) {
+    let text;
+    try {
+      text = await loadQuizLyrics(song.file);
+    } catch (err) {
+      console.error("Failed to load lyrics for the quiz:", err);
+      continue;
+    }
+    const line = pickQuizLine(text, song.title);
+    if (!line) continue;
+
+    const lang = songLanguage(song);
+    const decoys = shuffle(
+      quizPool().filter(
+        (s) => s.file !== song.file && songLanguage(s) === lang,
+      ),
+    ).slice(0, QUIZ_OPTIONS - 1);
+    if (decoys.length < QUIZ_OPTIONS - 1) continue;
+
+    return {
+      song,
+      line,
+      options: shuffle([song, ...decoys]),
+      answered: false,
+    };
+  }
+  return null;
+}
+
+function currentQuizPlayer() {
+  return quiz.players[quiz.turn] || quiz.players[0] || "Guest";
+}
+
+async function nextQuizQuestion() {
+  el.quizRoundChip.textContent = `Round ${quiz.round} / ${quiz.rounds}`;
+  el.quizTurnName.textContent = currentQuizPlayer();
+  // The feedback line keeps its space so grading doesn't shift the options.
+  el.quizFeedback.textContent = "";
+  delete el.quizFeedback.dataset.tone;
+  el.quizLine.textContent = "…";
+  el.quizOptions.innerHTML = "";
+  renderQuizScoreboard();
+  // Re-trigger the "your turn" flash for the player coming up.
+  el.quizTurn.classList.remove("is-new");
+  void el.quizTurn.offsetWidth;
+  el.quizTurn.classList.add("is-new");
+
+  const question = await buildQuizQuestion();
+  if (!question) {
+    endQuiz("The library ran out of usable questions.");
+    return;
+  }
+
+  quiz.question = question;
+  quiz.usedFiles.push(question.song.file);
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  const question = quiz.question;
+  el.quizLine.textContent = question.line;
+  el.quizLine.dir = isRtl(question.song) ? "rtl" : "ltr";
+
+  el.quizOptions.innerHTML = "";
+  for (const option of question.options) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "quiz-option";
+    btn.dataset.file = option.file;
+
+    const title = document.createElement("span");
+    title.className = "title";
+    title.dir = "auto";
+    title.textContent = option.title;
+
+    const artist = document.createElement("span");
+    artist.className = "artist";
+    artist.dir = "auto";
+    artist.textContent = option.artist || "";
+
+    btn.append(title, artist);
+    btn.addEventListener("click", () => answerQuiz(option));
+    el.quizOptions.appendChild(btn);
+  }
+}
+
+function renderQuizScoreboard() {
+  el.quizScoreboard.innerHTML = "";
+  const active = currentQuizPlayer();
+  for (const name of quiz.players) {
+    const chip = document.createElement("span");
+    chip.className = name === active ? "quiz-score is-active" : "quiz-score";
+    chip.dir = "auto";
+
+    const who = document.createElement("span");
+    who.className = "quiz-score-name";
+    who.textContent = name;
+
+    const pts = document.createElement("span");
+    pts.className = "quiz-score-pts";
+    pts.textContent = quiz.scores[name] ?? 0;
+
+    chip.append(who, pts);
+    el.quizScoreboard.appendChild(chip);
+  }
+}
+
+function answerQuiz(option) {
+  const question = quiz.question;
+  if (!question || question.answered) return;
+  question.answered = true;
+
+  const player = currentQuizPlayer();
+  const correct = option.file === question.song.file;
+  if (correct) quiz.scores[player] = (quiz.scores[player] || 0) + QUIZ_POINTS;
+
+  for (const btn of el.quizOptions.querySelectorAll(".quiz-option")) {
+    btn.disabled = true;
+    if (btn.dataset.file === question.song.file)
+      btn.classList.add("is-correct");
+    else if (btn.dataset.file === option.file) btn.classList.add("is-wrong");
+  }
+
+  const answer = question.song.artist
+    ? `${question.song.title} — ${question.song.artist}`
+    : question.song.title;
+  el.quizFeedback.textContent = correct
+    ? `\u2705 Spot on, ${player}. +${QUIZ_POINTS} points.`
+    : `\u274C Not quite — it was “${answer}”.`;
+  el.quizFeedback.dataset.tone = correct ? "ok" : "warn";
+  renderQuizScoreboard();
+
+  quiz.timeoutId = setTimeout(advanceQuiz, QUIZ_ANSWER_MS);
+}
+
+function advanceQuiz() {
+  quiz.timeoutId = null;
+  quiz.turn += 1;
+  if (quiz.turn < quiz.players.length) {
+    nextQuizQuestion();
+    return;
+  }
+
+  // Everyone has played this round — show where things stand.
+  quiz.turn = 0;
+  if (quiz.round >= quiz.rounds) endQuiz();
+  else showQuizStandings();
+}
+
+// Sorted best-first; ties keep the turn order so the list never jitters.
+function quizStandings() {
+  return [...quiz.players].sort(
+    (a, b) => (quiz.scores[b] || 0) - (quiz.scores[a] || 0),
+  );
+}
+
+function renderQuizStandings(final) {
+  el.quizStandings.innerHTML = "";
+  const ranking = quizStandings();
+  const top = quiz.scores[ranking[0]] || 0;
+
+  ranking.forEach((name, index) => {
+    const li = document.createElement("li");
+    const row = document.createElement("div");
+    const leading = final && top > 0 && (quiz.scores[name] || 0) === top;
+    row.className = leading ? "leaderboard-row you" : "leaderboard-row";
+
+    const rank = document.createElement("span");
+    rank.className = "lb-rank";
+    rank.textContent = leading ? "\u{1F451}" : `${index + 1}.`;
+
+    const main = document.createElement("span");
+    main.className = "lb-main";
+
+    const who = document.createElement("span");
+    who.className = "lb-user";
+    who.dir = "auto";
+    who.textContent = name;
+
+    const pts = document.createElement("span");
+    pts.className = "lb-score";
+    pts.textContent = `${quiz.scores[name] || 0} pts`;
+
+    main.append(who, pts);
+    row.append(rank, main);
+    li.appendChild(row);
+    el.quizStandings.appendChild(li);
+  });
+}
+
+function showQuizStandings() {
+  renderQuizStandings(false);
+  el.quizOverlayTitle.textContent = `\u{1F4CA} Round ${quiz.round} done`;
+  el.quizOverlayText.textContent = `${quiz.rounds - quiz.round} round${
+    quiz.rounds - quiz.round === 1 ? "" : "s"
+  } to go.`;
+  el.quizOverlayActions.classList.add("hidden");
+  el.quizContinueBtn.classList.remove("hidden");
+  el.quizOverlay.classList.remove("hidden");
+
+  quiz.timeoutId = setTimeout(continueQuiz, QUIZ_STANDINGS_MS);
+}
+
+// Used by both the countdown and the "Next round" button.
+function continueQuiz() {
+  clearTimeout(quiz.timeoutId);
+  quiz.timeoutId = null;
+  el.quizOverlay.classList.add("hidden");
+  quiz.round += 1;
+  nextQuizQuestion();
+}
+
+function endQuiz(reason) {
+  clearTimeout(quiz.timeoutId);
+  quiz.timeoutId = null;
+  quiz.question = null;
+
+  renderQuizStandings(true);
+  const ranking = quizStandings();
+  const best = quiz.scores[ranking[0]] || 0;
+  const winners = ranking.filter((n) => (quiz.scores[n] || 0) === best);
+
+  el.quizOverlayTitle.textContent = "\u{1F3C1} Final scores";
+  if (reason) el.quizOverlayText.textContent = reason;
+  else if (best === 0)
+    el.quizOverlayText.textContent = "Nobody landed one. Brutal round.";
+  else if (winners.length > 1)
+    el.quizOverlayText.textContent = `It's a tie between ${winners.join(" and ")}!`;
+  else el.quizOverlayText.textContent = `${winners[0]} takes it. 🎉`;
+
+  el.quizContinueBtn.classList.add("hidden");
+  el.quizOverlayActions.classList.remove("hidden");
+  el.quizOverlay.classList.remove("hidden");
+  if (best > 0) launchConfetti();
+}
+
+function quitQuiz() {
+  el.quizOverlay.classList.add("hidden");
+  goHome();
+}
+
 // ---------- Add a custom song ----------
+
 function openAddSong() {
   hideAllScreens();
   el.appHeader.classList.remove("hidden");
@@ -1263,6 +1747,7 @@ el.modeClassicBtn.addEventListener("click", () => {
   goToSelect();
 });
 el.modeMysteryBtn.addEventListener("click", openMysteryScreen);
+el.modeQuizBtn.addEventListener("click", openQuizScreen);
 el.modeLibraryBtn.addEventListener("click", goToLibrary);
 el.selectBackBtn.addEventListener("click", goHome);
 el.songSearch.addEventListener("input", renderSongList);
@@ -1318,9 +1803,32 @@ el.showResultsBtn.addEventListener("click", () => {
   el.resultOverlay.classList.remove("hidden");
 });
 
+// ---------- Events: Pop Quiz ----------
+el.quizBackBtn.addEventListener("click", goHome);
+el.quizRounds.addEventListener("change", () => {
+  localStorage.setItem(QUIZ_ROUNDS_KEY, el.quizRounds.value);
+  updateQuizSetup();
+});
+el.quizLanguage.addEventListener("change", () => {
+  localStorage.setItem(QUIZ_LANG_KEY, el.quizLanguage.value);
+  updateQuizSetup();
+});
+el.quizStartBtn.addEventListener("click", startQuiz);
+el.quizQuitBtn.addEventListener("click", quitQuiz);
+el.quizContinueBtn.addEventListener("click", continueQuiz);
+el.quizExitBtn.addEventListener("click", quitQuiz);
+el.quizAgainBtn.addEventListener("click", () => {
+  el.quizOverlay.classList.add("hidden");
+  openQuizScreen();
+});
+
 // ---------- Init ----------
 el.mysteryLanguage.value =
   localStorage.getItem(MYSTERY_LANG_KEY) || el.mysteryLanguage.value;
+el.quizRounds.value =
+  localStorage.getItem(QUIZ_ROUNDS_KEY) || el.quizRounds.value;
+el.quizLanguage.value =
+  localStorage.getItem(QUIZ_LANG_KEY) || el.quizLanguage.value;
 
 loadUsers();
 loadSongs().then(updateMysteryPool);

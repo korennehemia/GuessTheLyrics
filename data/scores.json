@@ -90,6 +90,19 @@
       "finished": true,
       "seconds": 170,
       "date": "2026-08-31T13:28:18.702Z"
+    },
+    {
+      "user": "Koren",
+      "file": "put-your-records-on.txt",
+      "title": "Put Your Records On",
+      "mode": "mystery",
+      "words": 31,
+      "total": 272,
+      "guesses": 3,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": 23,
+      "date": "2026-08-31T14:39:39.709Z"
     }
   ]
 }

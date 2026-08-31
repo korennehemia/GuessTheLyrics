@@ -15,25 +15,26 @@
 
     <!-- Mode picker (landing screen) -->
     <section id="homeScreen" class="screen">
-      <h2 class="mode-heading">Choose your mode</h2>
       <div class="mode-grid">
         <button id="modeClassicBtn" class="mode-card mode-classic" type="button">
           <span class="mode-emoji">🎤</span>
           <span class="mode-name">Classic</span>
-          <span class="mode-desc">Pick a song you know and uncover every single word before the clock runs out.</span>
-          <span class="mode-tag">⏱ 10 minute race</span>
+          <span class="mode-desc">Do you think you remember song lyrics?</span>
         </button>
         <button id="modeMysteryBtn" class="mode-card mode-mystery" type="button">
           <span class="mode-emoji">🕵️</span>
           <span class="mode-name">Mystery Song</span>
-          <span class="mode-desc">The title and artist are hidden. No timer — reveal as few words as you can, then name the track.</span>
-          <span class="mode-tag">🏅 Fewest words wins</span>
+          <span class="mode-desc">How many lyrics do you need to identify the song?</span>
+        </button>
+        <button id="modeQuizBtn" class="mode-card mode-quiz" type="button">
+          <span class="mode-emoji">🎯</span>
+          <span class="mode-name">Pop Quiz</span>
+          <span class="mode-desc">Can you name the song from just one line?</span>
         </button>
         <button id="modeLibraryBtn" class="mode-card mode-library" type="button">
           <span class="mode-emoji">📚</span>
           <span class="mode-name">My Library</span>
-          <span class="mode-desc">Add your own songs, and hide the ones you're bored of so they stop showing up in games.</span>
-          <span class="mode-tag" id="libraryTag">🎶 Manage the catalog</span>
+          <span class="mode-desc">View, Add or Disable songs from games</span>
         </button>
       </div>
     </section>
@@ -60,8 +61,7 @@
         <button id="libraryAddBtn" class="btn btn-secondary" type="button">➕ Add song</button>
       </div>
       <p class="muted library-hint">
-        Hidden songs stay in the library with their scores intact — they are just
-        skipped by Classic and Mystery rounds until you bring them back.
+        🚫 disables a song but don't worry, you can enable it again anytime.
       </p>
       <div class="detail-meta library-stats">
         <span class="chip" id="libraryActiveChip">… in play</span>
@@ -176,6 +176,76 @@
       <button id="mysteryStartBtn" class="btn btn-primary btn-block" type="button">🎲 Start mystery round</button>
     </section>
 
+    <!-- Pop Quiz setup screen -->
+    <section id="quizScreen" class="screen hidden">
+      <button id="quizBackBtn" class="btn btn-ghost" type="button">← Modes</button>
+      <div class="mystery-hero quiz-hero">
+        <span class="mystery-hero-emoji">🎯</span>
+        <h2>Pop Quiz</h2>
+        <p class="muted">
+          A group game. Everyone takes turns: you get one line from a song and
+          three songs it might belong to. Name the right one and bank the points.
+        </p>
+      </div>
+
+      <div class="detail-meta">
+        <span class="chip" id="quizSummaryChip">… questions</span>
+        <span class="chip" id="quizPoolChip">… songs</span>
+        <span class="chip">🎯 10 pts per hit</span>
+      </div>
+
+      <div class="quiz-config">
+        <label class="add-field">
+          <span>Rounds</span>
+          <select id="quizRounds">
+            <option value="3">3 rounds</option>
+            <option value="5" selected>5 rounds</option>
+            <option value="7">7 rounds</option>
+            <option value="10">10 rounds</option>
+          </select>
+        </label>
+        <label class="add-field">
+          <span>Language</span>
+          <select id="quizLanguage">
+            <option value="any">Any language</option>
+            <option value="en">English</option>
+            <option value="he">Hebrew (עברית)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="quiz-players">
+        <span class="quiz-players-head">👥 Players <small class="muted">· tap to add or remove</small></span>
+        <div id="quizPlayerList" class="quiz-player-chips"></div>
+        <p id="quizPlayersHint" class="muted quiz-players-hint">Everyone plays one question per round, in this order.</p>
+      </div>
+
+      <button id="quizStartBtn" class="btn btn-primary btn-block" type="button">🎯 Start the quiz</button>
+    </section>
+
+    <!-- Pop Quiz game screen -->
+    <section id="quizGameScreen" class="screen hidden">
+      <div class="quiz-topbar">
+        <span class="chip" id="quizRoundChip">Round 1 / 5</span>
+        <button id="quizQuitBtn" class="btn btn-ghost" type="button">🏠 Exit</button>
+      </div>
+
+      <div class="quiz-scoreboard" id="quizScoreboard"></div>
+
+      <div class="quiz-turn" id="quizTurn">
+        <span class="quiz-turn-label">It's your turn</span>
+        <strong class="quiz-turn-name" id="quizTurnName" dir="auto">—</strong>
+      </div>
+
+      <div class="quiz-line-wrap">
+        <blockquote class="quiz-line" id="quizLine" dir="auto"></blockquote>
+      </div>
+
+      <p class="quiz-prompt">Which song is that line from?</p>
+      <div class="quiz-options" id="quizOptions"></div>
+      <p id="quizFeedback" class="quiz-feedback"></p>
+    </section>
+
     <!-- Challenge screen -->
     <section id="challengeScreen" class="screen hidden">
       <div class="challenge-topbar">
@@ -261,6 +331,20 @@
         <p>The timer is stopped and the lyrics are hidden. Take your time.</p>
         <div class="overlay-actions">
           <button id="continueBtn" class="btn btn-primary" type="button">Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pop Quiz standings: shown between rounds and at the end of the game -->
+    <div id="quizOverlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h2 id="quizOverlayTitle">Round complete</h2>
+        <p id="quizOverlayText" class="muted"></p>
+        <ol id="quizStandings" class="leaderboard-list quiz-standings"></ol>
+        <button id="quizContinueBtn" class="btn btn-secondary btn-block" type="button">Next round ▸</button>
+        <div class="overlay-actions hidden" id="quizOverlayActions">
+          <button id="quizExitBtn" class="btn btn-primary" type="button">🏠 Exit to home</button>
+          <button id="quizAgainBtn" class="btn btn-secondary" type="button">🔁 New quiz</button>
         </div>
       </div>
     </div>
