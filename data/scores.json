@@ -38,6 +38,58 @@
       "finished": true,
       "seconds": 34,
       "date": "2026-08-30T11:01:30.609Z"
+    },
+    {
+      "user": "Koren",
+      "file": "אהבה.txt",
+      "title": "אהבה",
+      "mode": "classic",
+      "words": 0,
+      "total": 229,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-08-31T13:11:24.297Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Thank You Next.txt",
+      "title": "Thank You Next",
+      "mode": "mystery",
+      "words": 0,
+      "total": 455,
+      "guesses": 0,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": 2,
+      "date": "2026-08-31T13:11:39.259Z"
+    },
+    {
+      "user": "Koren",
+      "file": "את חסרה לי.txt",
+      "title": "את חסרה לי",
+      "mode": "mystery",
+      "words": 0,
+      "total": 199,
+      "guesses": 0,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": 4,
+      "date": "2026-08-31T13:24:47.183Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Espresso.txt",
+      "title": "Espresso",
+      "mode": "mystery",
+      "words": 132,
+      "total": 391,
+      "guesses": 18,
+      "artistGuessed": true,
+      "finished": true,
+      "seconds": 170,
+      "date": "2026-08-31T13:28:18.702Z"
     }
   ]
 }

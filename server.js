@@ -45,6 +45,17 @@ const server = http.createServer((req, res) => {
       return;
     }
 
+    // ---------- API: hide / unhide a song ----------
+    // Hiding never deletes anything; it only flags the entry so the game
+    // skips it when picking songs.
+    if (urlPath === "/api/songs/hidden") {
+      if (req.method === "POST") return setSongHidden(req, res);
+      res
+        .writeHead(405, { "Content-Type": "text/plain" })
+        .end("Method not allowed");
+      return;
+    }
+
     let filePath = path.normalize(path.join(ROOT, urlPath));
 
     // Prevent path traversal outside the project root.
@@ -258,6 +269,71 @@ function saveSong(req, res) {
       res
         .writeHead(500, { "Content-Type": "text/plain" })
         .end("Could not save song");
+      return;
+    }
+
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify({ ok: true, song: entry }));
+  });
+}
+
+// Flip the `hidden` flag on a catalog entry. The lyrics file and any scores
+// are left untouched — this is a soft disable, not a delete.
+function setSongHidden(req, res) {
+  let body = "";
+  let tooBig = false;
+  req.on("data", (chunk) => {
+    body += chunk;
+    if (body.length > 10_000) {
+      tooBig = true;
+      req.destroy();
+    }
+  });
+  req.on("end", () => {
+    if (tooBig) {
+      res
+        .writeHead(413, { "Content-Type": "text/plain" })
+        .end("Payload too large");
+      return;
+    }
+    let data;
+    try {
+      data = JSON.parse(body);
+    } catch {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Invalid JSON");
+      return;
+    }
+
+    const file = String(data.file || "").slice(0, 200);
+    const hidden = Boolean(data.hidden);
+    if (!file) {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Missing song");
+      return;
+    }
+
+    let songsData;
+    try {
+      songsData = JSON.parse(fs.readFileSync(SONGS_FILE, "utf8"));
+    } catch {
+      songsData = { songs: [] };
+    }
+    if (!Array.isArray(songsData.songs)) songsData.songs = [];
+
+    const entry = songsData.songs.find((s) => s && s.file === file);
+    if (!entry) {
+      res.writeHead(404, { "Content-Type": "text/plain" }).end("Unknown song");
+      return;
+    }
+
+    if (hidden) entry.hidden = true;
+    else delete entry.hidden;
+
+    try {
+      fs.writeFileSync(SONGS_FILE, JSON.stringify(songsData, null, 2), "utf8");
+    } catch {
+      res
+        .writeHead(500, { "Content-Type": "text/plain" })
+        .end("Could not update song");
       return;
     }
 

@@ -9,6 +9,8 @@ import {
   getCustomSongs,
   getLocalLyrics,
   saveSong,
+  getHiddenSongs,
+  setSongHidden,
 } from "./storage.js";
 
 const GAME_SECONDS = 10 * 60; // 10 minute timer (classic mode only)
@@ -71,7 +73,16 @@ const el = {
   songList: document.getElementById("songList"),
   songListEmpty: document.getElementById("songListEmpty"),
   songSearch: document.getElementById("songSearch"),
-  addSongBtn: document.getElementById("addSongBtn"),
+  modeLibraryBtn: document.getElementById("modeLibraryBtn"),
+  libraryTag: document.getElementById("libraryTag"),
+  libraryScreen: document.getElementById("libraryScreen"),
+  libraryBackBtn: document.getElementById("libraryBackBtn"),
+  libraryAddBtn: document.getElementById("libraryAddBtn"),
+  librarySearch: document.getElementById("librarySearch"),
+  libraryList: document.getElementById("libraryList"),
+  libraryEmpty: document.getElementById("libraryEmpty"),
+  libraryActiveChip: document.getElementById("libraryActiveChip"),
+  libraryHiddenChip: document.getElementById("libraryHiddenChip"),
   addScreen: document.getElementById("addScreen"),
   addBackBtn: document.getElementById("addBackBtn"),
   addSongForm: document.getElementById("addSongForm"),
@@ -110,9 +121,8 @@ const el = {
   leaderboardList: document.getElementById("leaderboardList"),
   leaderboardSong: document.getElementById("leaderboardSong"),
   leaderboardEmpty: document.getElementById("leaderboardEmpty"),
-  playAgainBtn: document.getElementById("playAgainBtn"),
+  exitHomeBtn: document.getElementById("exitHomeBtn"),
   viewLyricsBtn: document.getElementById("viewLyricsBtn"),
-  chooseAnotherBtn: document.getElementById("chooseAnotherBtn"),
   pauseOverlay: document.getElementById("pauseOverlay"),
   continueBtn: document.getElementById("continueBtn"),
 };
@@ -185,8 +195,27 @@ async function loadSongs() {
     console.error("Failed to load saved songs:", err);
   }
 
+  // A song can be flagged hidden in songs.json (shared, server mode) or in
+  // this browser's own list. Either way it sits out of games until unhidden.
+  let hiddenLocally = new Set();
+  try {
+    hiddenLocally = getHiddenSongs();
+  } catch (err) {
+    console.error("Failed to load hidden songs:", err);
+  }
+  for (const song of state.songs) {
+    song.hidden = Boolean(song.hidden) || hiddenLocally.has(song.file);
+  }
+
   sortSongs();
   renderSongList();
+  renderLibrary();
+  updateLibraryTag();
+}
+
+// Everything a game is allowed to pick from.
+function playableSongs() {
+  return state.songs.filter((s) => !s.hidden);
 }
 
 // Alphabetical by title. A locale-aware collator keeps Hebrew and English in a
@@ -266,7 +295,7 @@ function isRtl(song) {
 // ---------- Rendering: song list ----------
 function renderSongList() {
   const q = normalize(el.songSearch.value || "");
-  const matches = state.songs.filter((s) => {
+  const matches = playableSongs().filter((s) => {
     if (!q) return true;
     return (
       normalize(s.title).includes(q) || normalize(s.artist || "").includes(q)
@@ -353,15 +382,6 @@ function renderLyrics() {
 }
 
 // ---------- Game flow ----------
-// Keep the result-overlay buttons honest about what they will do next.
-function syncResultActions() {
-  const mystery = state.mode === "mystery";
-  el.playAgainBtn.textContent = mystery ? "🎲 New mystery song" : "Play again";
-  el.chooseAnotherBtn.textContent = mystery
-    ? "Back to Mystery"
-    : "Choose another song";
-}
-
 async function startChallenge(song) {
   state.current = song;
   let text;
@@ -411,6 +431,7 @@ async function startChallenge(song) {
   el.guessInput.value = "";
   el.guessInput.disabled = false;
   el.giveUpBtn.disabled = false;
+  el.giveUpBtn.textContent = "Give up";
   el.giveUpBtn.classList.remove("hidden");
   // Pausing only matters when a clock is running.
   el.pauseBtn.disabled = false;
@@ -547,11 +568,12 @@ function endGame(won) {
   stopTimer();
   el.pauseOverlay.classList.add("hidden");
   el.guessInput.disabled = true;
-  el.giveUpBtn.disabled = true;
   el.pauseBtn.classList.add("hidden");
-  // Swap "Give up" for a "Show results" button so the revealed lyrics
-  // stay visible and the results overlay can be reopened at any time.
-  el.giveUpBtn.classList.add("hidden");
+  // The round is over, so "Give up" becomes the way out, and a "Show results"
+  // button sits next to it so the overlay can be reopened at any time.
+  el.giveUpBtn.textContent = "\u{1F3E0} Exit to home";
+  el.giveUpBtn.disabled = false;
+  el.giveUpBtn.classList.remove("hidden");
   el.showResultsBtn.classList.remove("hidden");
 
   // Reveal any remaining hidden words.
@@ -578,7 +600,6 @@ function endGame(won) {
     el.resultTitle.textContent = "⏰ Time's up!";
     el.resultText.textContent = `You found ${found} of ${total} words. The rest are highlighted in red.`;
   }
-  syncResultActions();
   el.resultOverlay.classList.remove("hidden");
 
   // Persist this result, then refresh the leaderboard for the song.
@@ -619,7 +640,6 @@ function endMysteryGame(solved) {
     el.resultTitle.textContent = "🙈 Not this time";
     el.resultText.textContent = `You uncovered ${cost} different words but never landed the title.`;
   }
-  syncResultActions();
   el.resultOverlay.classList.remove("hidden");
 
   submitAndShowLeaderboard({
@@ -742,6 +762,7 @@ function hideAllScreens() {
   el.mysteryScreen.classList.add("hidden");
   el.challengeScreen.classList.add("hidden");
   el.addScreen.classList.add("hidden");
+  el.libraryScreen.classList.add("hidden");
 }
 
 function leaveGame() {
@@ -766,6 +787,96 @@ function goToSelect() {
   el.selectScreen.classList.remove("hidden");
 }
 
+// ---------- My Library ----------
+function goToLibrary() {
+  leaveGame();
+  hideAllScreens();
+  el.appHeader.classList.remove("hidden");
+  el.libraryScreen.classList.remove("hidden");
+  renderLibrary();
+}
+
+function updateLibraryTag() {
+  const total = state.songs.length;
+  el.libraryTag.textContent =
+    total === 1 ? "\u{1F3B6} 1 song" : `\u{1F3B6} ${total} songs`;
+}
+
+// The library lists everything, hidden songs included — that is the whole
+// point of it, since hiding is reversible.
+function renderLibrary() {
+  const q = normalize(el.librarySearch.value || "");
+  const matches = state.songs.filter((s) => {
+    if (!q) return true;
+    return (
+      normalize(s.title).includes(q) || normalize(s.artist || "").includes(q)
+    );
+  });
+
+  const hiddenCount = state.songs.filter((s) => s.hidden).length;
+  const activeCount = state.songs.length - hiddenCount;
+  el.libraryActiveChip.textContent = `\u{1F3A4} ${activeCount} in play`;
+  el.libraryHiddenChip.textContent = `\u{1F648} ${hiddenCount} hidden`;
+
+  el.libraryList.innerHTML = "";
+  el.libraryEmpty.classList.toggle("hidden", matches.length > 0);
+  el.libraryEmpty.textContent = state.songs.length
+    ? "No songs match your search."
+    : "Your library is empty — add the first song.";
+
+  for (const song of matches) {
+    const li = document.createElement("li");
+    li.className = song.hidden ? "library-item is-hidden" : "library-item";
+
+    const info = document.createElement("div");
+    info.className = "library-info";
+
+    const title = document.createElement("span");
+    title.className = "title";
+    title.dir = "auto";
+    title.textContent = song.title;
+
+    const artist = document.createElement("span");
+    artist.className = "artist";
+    artist.dir = "auto";
+    artist.textContent = song.artist || "";
+
+    info.append(title, artist);
+
+    if (song.hidden) {
+      const badge = document.createElement("span");
+      badge.className = "library-badge";
+      badge.textContent = "Hidden from games";
+      info.appendChild(badge);
+    }
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = song.hidden ? "btn btn-secondary" : "btn btn-ghost";
+    toggle.textContent = song.hidden ? "\u{1F441} Unhide" : "\u{1F648} Hide";
+    toggle.addEventListener("click", () => toggleSongHidden(song, toggle));
+
+    li.append(info, toggle);
+    el.libraryList.appendChild(li);
+  }
+}
+
+async function toggleSongHidden(song, button) {
+  const next = !song.hidden;
+  button.disabled = true;
+  try {
+    await setSongHidden(song.file, next, { local: Boolean(song.local) });
+    song.hidden = next;
+  } catch (err) {
+    console.error("Failed to update the song:", err);
+    button.disabled = false;
+    return;
+  }
+  renderLibrary();
+  renderSongList();
+  updateMysteryPool();
+}
+
 // ---------- Mystery Song mode ----------
 function openMysteryScreen() {
   state.mode = "mystery";
@@ -781,10 +892,9 @@ function openMysteryScreen() {
 // Songs eligible for a mystery round, honouring the language filter.
 function mysteryPool() {
   const lang = el.mysteryLanguage.value;
-  if (lang === "any") return state.songs;
-  return state.songs.filter(
-    (s) => String(s.language || "en").toLowerCase() === lang,
-  );
+  const pool = playableSongs();
+  if (lang === "any") return pool;
+  return pool.filter((s) => String(s.language || "en").toLowerCase() === lang);
 }
 
 function updateMysteryPool() {
@@ -968,7 +1078,7 @@ async function submitNewSong(event) {
   try {
     await saveSong({ title, artist, language, lyrics });
     await loadSongs();
-    goToSelect();
+    goToLibrary();
   } catch (err) {
     console.error("Failed to add song:", err);
     showAddError("Could not save the song. Please try again.");
@@ -1153,11 +1263,14 @@ el.modeClassicBtn.addEventListener("click", () => {
   goToSelect();
 });
 el.modeMysteryBtn.addEventListener("click", openMysteryScreen);
+el.modeLibraryBtn.addEventListener("click", goToLibrary);
 el.selectBackBtn.addEventListener("click", goHome);
 el.songSearch.addEventListener("input", renderSongList);
-el.addSongBtn.addEventListener("click", openAddSong);
-el.addBackBtn.addEventListener("click", goToSelect);
-el.addCancelBtn.addEventListener("click", goToSelect);
+el.libraryBackBtn.addEventListener("click", goHome);
+el.librarySearch.addEventListener("input", renderLibrary);
+el.libraryAddBtn.addEventListener("click", openAddSong);
+el.addBackBtn.addEventListener("click", goToLibrary);
+el.addCancelBtn.addEventListener("click", goToLibrary);
 el.addSongForm.addEventListener("submit", submitNewSong);
 for (const select of userSelects()) {
   select.addEventListener("change", (e) => setUser(e.target.value));
@@ -1165,7 +1278,11 @@ for (const select of userSelects()) {
 el.guessInput.addEventListener("input", (e) => handleGuess(e.target.value));
 el.pauseBtn.addEventListener("click", pauseGame);
 el.continueBtn.addEventListener("click", resumeGame);
-el.giveUpBtn.addEventListener("click", () => endGame(false));
+// Mid-round this is "Give up"; once the round is over it is the way home.
+el.giveUpBtn.addEventListener("click", () => {
+  if (state.running) endGame(false);
+  else goHome();
+});
 el.detailBackBtn.addEventListener("click", goToSelect);
 el.startGameBtn.addEventListener("click", () => {
   if (state.current) {
@@ -1191,11 +1308,7 @@ for (const input of [el.mysteryTitleGuess, el.mysteryArtistGuess]) {
   });
 }
 
-el.playAgainBtn.addEventListener("click", () => {
-  // "Play again" means a brand new hidden song in mystery mode.
-  if (state.mode === "mystery") return startMysteryRound();
-  if (state.current) startChallenge(state.current);
-});
+el.exitHomeBtn.addEventListener("click", goHome);
 // Close the overlay to reveal the finished lyrics behind it (missed words in red).
 el.viewLyricsBtn.addEventListener("click", () => {
   el.resultOverlay.classList.add("hidden");
@@ -1203,10 +1316,6 @@ el.viewLyricsBtn.addEventListener("click", () => {
 // Reopen the results overlay after reviewing the lyrics.
 el.showResultsBtn.addEventListener("click", () => {
   el.resultOverlay.classList.remove("hidden");
-});
-el.chooseAnotherBtn.addEventListener("click", () => {
-  if (state.mode === "mystery") return openMysteryScreen();
-  goToSelect();
 });
 
 // ---------- Init ----------

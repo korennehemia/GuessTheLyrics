@@ -15,10 +15,28 @@
 
 * { box-sizing: border-box; }
 
+/* Dark, slim scrollbars for the in-card scroll areas. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3f4a8f transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #3f4a8f;
+  background-clip: content-box;
+  border: 2px solid transparent;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: #55619f; background-clip: content-box; }
+
 html, body {
   margin: 0;
   padding: 0;
-  min-height: 100%;
+  height: 100%;
+  /* The page itself never scrolls — each screen scrolls its own content, so
+     the layout never jumps when a scrollbar appears or disappears. */
+  overflow: hidden;
 }
 
 body {
@@ -31,11 +49,16 @@ body {
 
 .app {
   max-width: 900px;
+  height: 100vh;
+  height: 100dvh;
   margin: 0 auto;
-  padding: 28px 20px 60px;
+  padding: 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
-.app-header { text-align: center; margin-bottom: 22px; }
+.app-header { flex: 0 0 auto; text-align: center; margin-bottom: 18px; }
 .app-header h1 { margin: 0; font-size: 2rem; letter-spacing: 0.3px; }
 .tagline { color: var(--muted); margin: 6px 0 0; }
 
@@ -68,6 +91,24 @@ body {
   border-radius: var(--radius);
   padding: 20px;
   box-shadow: var(--shadow);
+  /* Short screens keep their natural height; tall ones shrink and scroll
+     inside the card instead of growing the page. */
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+/* Screens that own a long list or the lyrics take the full height and hand
+   the scrolling over to an inner container. The card itself only scrolls as a
+   last resort, on viewports too short for even the minimum layout. */
+#selectScreen,
+#libraryScreen,
+#challengeScreen {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 .hidden { display: none !important; }
@@ -81,22 +122,45 @@ body {
   gap: 12px;
 }
 .select-head h2 { margin: 0; }
-.select-row { margin: 8px 0 16px; }
+.select-row { flex: 0 0 auto; margin: 8px 0 16px; }
 
-#songSearch, #guessInput {
+#songSearch, #librarySearch, #guessInput {
   width: 100%;
   padding: 13px 14px;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--bg-elev-2);
   color: var(--text);
+  font-family: inherit;
   font-size: 1rem;
   outline: none;
+  -webkit-appearance: none;
+  appearance: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-#songSearch:focus, #guessInput:focus {
+#songSearch::placeholder, #librarySearch::placeholder, #guessInput::placeholder {
+  color: var(--muted);
+}
+#songSearch:focus, #librarySearch:focus, #guessInput:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.25);
+}
+/* The native "clear" cross is a dark glyph that vanishes on this background,
+   so it is redrawn as a light one. */
+#songSearch::-webkit-search-cancel-button,
+#librarySearch::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  background: var(--muted);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' stroke='black' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' stroke='black' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+#songSearch::-webkit-search-cancel-button:hover,
+#librarySearch::-webkit-search-cancel-button:hover {
+  background: var(--text);
 }
 
 .song-list {
@@ -105,7 +169,12 @@ body {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  align-content: start;
   gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .song-card {
@@ -134,7 +203,8 @@ body {
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  flex: 0 0 auto;
+  margin-bottom: 12px;
 }
 .challenge-meta { flex: 1; min-width: 140px; }
 .song-title { font-weight: 700; font-size: 1.15rem; }
@@ -158,7 +228,8 @@ body {
   background: var(--bg-elev-2);
   border-radius: 999px;
   overflow: hidden;
-  margin-bottom: 16px;
+  flex: 0 0 auto;
+  margin-bottom: 14px;
   border: 1px solid var(--border);
 }
 .progress-fill {
@@ -168,7 +239,7 @@ body {
   transition: width 0.3s ease;
 }
 
-.input-row { display: flex; gap: 10px; margin-bottom: 18px; }
+.input-row { display: flex; gap: 10px; flex: 0 0 auto; margin-bottom: 14px; }
 .input-row #guessInput { flex: 1; }
 
 .lyrics {
@@ -180,9 +251,12 @@ body {
   word-spacing: 0.2em;
   letter-spacing: 0.01em;
   font-size: 1.05rem;
-  min-height: 200px;
-  max-height: 46vh;
+  /* The lyrics are the point of the game, so they soak up whatever height
+     is left over and scroll on their own. */
+  flex: 1 1 auto;
+  min-height: 120px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   white-space: pre-wrap;
 }
 .lyrics .line { display: block; }
@@ -261,6 +335,9 @@ body {
   text-align: center;
   max-width: 420px;
   width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   box-shadow: var(--shadow);
 }
 .overlay-card h2 { margin-top: 0; font-size: 1.6rem; }
@@ -459,6 +536,19 @@ body {
   background-clip: text;
   color: transparent;
 }
+.mode-library {
+  background:
+    linear-gradient(160deg, #10304a, #0e1c38) padding-box,
+    linear-gradient(135deg, var(--accent-2), var(--good)) border-box;
+  box-shadow: 0 10px 26px rgba(34, 211, 238, 0.18);
+}
+.mode-library:hover { box-shadow: 0 16px 34px rgba(34, 211, 238, 0.3); }
+.mode-library .mode-name {
+  background: linear-gradient(90deg, #67e8f9, var(--good));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 .mode-desc { color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
 .mode-tag {
   margin-top: 4px;
@@ -469,6 +559,43 @@ body {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- My Library ---------- */
+.select-head { flex: 0 0 auto; }
+.select-head-spacer { flex: 0 0 auto; min-width: 84px; }
+.library-hint { flex: 0 0 auto; margin: 12px 0 0; font-size: 0.9rem; line-height: 1.5; }
+.library-stats { flex: 0 0 auto; margin-top: 12px; }
+.library-list { grid-template-columns: 1fr; gap: 10px; }
+.library-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.library-item.is-hidden {
+  opacity: 0.6;
+  border-style: dashed;
+}
+.library-info { min-width: 0; }
+.library-info .title { display: block; font-weight: 600; }
+.library-info .artist { display: block; color: var(--muted); font-size: 0.9rem; margin-top: 2px; }
+.library-item .btn { flex: 0 0 auto; }
+.library-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fcd34d;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.35);
 }
 
 /* ---------- Mystery Song ---------- */
@@ -492,6 +619,7 @@ body {
   flex-direction: column;
   gap: 12px;
   padding: 16px;
+  flex: 0 0 auto;
   margin-bottom: 16px;
   border-radius: var(--radius);
   border: 1px solid transparent;

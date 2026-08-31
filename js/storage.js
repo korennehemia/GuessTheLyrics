@@ -8,11 +8,13 @@
 const SCORES_KEY = "guessLyrics.scores";
 const SONGS_KEY = "guessLyrics.customSongs";
 const LYRICS_KEY = "guessLyrics.lyrics:";
+const HIDDEN_KEY = "guessLyrics.hiddenSongs";
 
 // Relative URLs so the app also works when served from a sub-path
 // (e.g. https://user.github.io/repo/).
 const SCORES_API = "api/scores";
 const SONGS_API = "api/songs";
+const HIDDEN_API = "api/songs/hidden";
 
 let apiProbe = null;
 
@@ -177,4 +179,34 @@ export async function saveSong({ title, artist, language, lyrics }) {
     throw new Error("Not enough browser storage to save this song.");
   }
   return song;
+}
+
+// ---------- Hidden songs ----------
+// Hiding is a soft disable: the song and its scores are kept, it is only left
+// out of Classic and Mystery rounds. With the server running the flag is also
+// written to songs.json so it is shared; the local list is always kept in sync
+// so songs added in the browser (which the server has never heard of) work the
+// same way.
+export function getHiddenSongs() {
+  return new Set(readLocal(HIDDEN_KEY, []));
+}
+
+export async function setSongHidden(file, hidden, { local = false } = {}) {
+  const files = readLocal(HIDDEN_KEY, []).filter((f) => f !== file);
+  if (hidden) files.push(file);
+  if (!writeLocal(HIDDEN_KEY, files)) {
+    throw new Error("Could not save the change to this browser.");
+  }
+
+  if (local || !(await hasApi())) return;
+
+  const res = await fetch(HIDDEN_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ file, hidden: Boolean(hidden) }),
+  });
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || `Request failed (${res.status})`);
+  }
 }

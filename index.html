@@ -29,6 +29,12 @@
           <span class="mode-desc">The title and artist are hidden. No timer — reveal as few words as you can, then name the track.</span>
           <span class="mode-tag">🏅 Fewest words wins</span>
         </button>
+        <button id="modeLibraryBtn" class="mode-card mode-library" type="button">
+          <span class="mode-emoji">📚</span>
+          <span class="mode-name">My Library</span>
+          <span class="mode-desc">Add your own songs, and hide the ones you're bored of so they stop showing up in games.</span>
+          <span class="mode-tag" id="libraryTag">🎶 Manage the catalog</span>
+        </button>
       </div>
     </section>
 
@@ -37,7 +43,7 @@
       <div class="select-head">
         <button id="selectBackBtn" class="btn btn-ghost" type="button">← Modes</button>
         <h2>Choose a song</h2>
-        <button id="addSongBtn" class="btn btn-secondary" type="button">➕ Add song</button>
+        <span class="select-head-spacer" aria-hidden="true"></span>
       </div>
       <div class="select-row">
         <input id="songSearch" type="search" placeholder="Search by title or artist…" autocomplete="off" />
@@ -46,9 +52,31 @@
       <p id="songListEmpty" class="muted hidden">No songs match your search.</p>
     </section>
 
+    <!-- My Library screen -->
+    <section id="libraryScreen" class="screen hidden">
+      <div class="select-head">
+        <button id="libraryBackBtn" class="btn btn-ghost" type="button">← Modes</button>
+        <h2>📚 My Library</h2>
+        <button id="libraryAddBtn" class="btn btn-secondary" type="button">➕ Add song</button>
+      </div>
+      <p class="muted library-hint">
+        Hidden songs stay in the library with their scores intact — they are just
+        skipped by Classic and Mystery rounds until you bring them back.
+      </p>
+      <div class="detail-meta library-stats">
+        <span class="chip" id="libraryActiveChip">… in play</span>
+        <span class="chip" id="libraryHiddenChip">… hidden</span>
+      </div>
+      <div class="select-row">
+        <input id="librarySearch" type="search" placeholder="Search by title or artist…" autocomplete="off" />
+      </div>
+      <ul id="libraryList" class="song-list library-list" aria-label="Library songs"></ul>
+      <p id="libraryEmpty" class="muted hidden">No songs match your search.</p>
+    </section>
+
     <!-- Add song screen -->
     <section id="addScreen" class="screen hidden">
-      <button id="addBackBtn" class="btn btn-ghost" type="button">← Songs</button>
+      <button id="addBackBtn" class="btn btn-ghost" type="button">← Library</button>
       <h2>Add a song</h2>
       <form id="addSongForm" class="add-form" novalidate>
         <label class="add-field">
@@ -221,9 +249,8 @@
           <p id="leaderboardEmpty" class="muted hidden">No scores yet — you're the first!</p>
         </div>
         <div class="overlay-actions">
-          <button id="playAgainBtn" class="btn btn-primary" type="button">Play again</button>
+          <button id="exitHomeBtn" class="btn btn-primary" type="button">🏠 Exit to home</button>
           <button id="viewLyricsBtn" class="btn btn-secondary" type="button">View lyrics ↓</button>
-          <button id="chooseAnotherBtn" class="btn btn-ghost" type="button">Choose another song</button>
         </div>
       </div>
     </div>
