@@ -181,6 +181,62 @@ export async function saveSong({ title, artist, language, lyrics }) {
   return song;
 }
 
+// True when the Node server is answering, i.e. when songs in config/songs.json
+// can actually be written back to disk.
+export function hasServerApi() {
+  return hasApi();
+}
+
+// Update an existing song in place. The `file` never changes so leaderboard
+// entries, which are keyed by file name, stay attached to the song.
+export async function updateSong({ file, title, artist, language, lyrics }) {
+  const text = String(lyrics).replace(/\r\n/g, "\n").slice(0, 50_000);
+  const details = {
+    file,
+    title: String(title).slice(0, 200),
+    artist: String(artist || "").slice(0, 200),
+    language: String(language || "en")
+      .toLowerCase()
+      .slice(0, 10),
+  };
+
+  // A browser-added song: rewrite its localStorage entry and lyrics blob.
+  const songs = readLocal(SONGS_KEY, []);
+  const index = songs.findIndex((s) => s && s.file === file);
+  if (index !== -1) {
+    const previous = getLocalLyrics(file);
+    try {
+      localStorage.setItem(LYRICS_KEY + file, text);
+    } catch {
+      throw new Error("Not enough browser storage to save this song.");
+    }
+    songs[index] = { ...songs[index], ...details, local: true };
+    if (!writeLocal(SONGS_KEY, songs)) {
+      if (previous != null) localStorage.setItem(LYRICS_KEY + file, previous);
+      throw new Error("Not enough browser storage to save this song.");
+    }
+    return songs[index];
+  }
+
+  if (!(await hasApi())) {
+    throw new Error(
+      "Editing the built-in songs needs the local server (node server.js).",
+    );
+  }
+
+  const res = await fetch(SONGS_API, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...details, lyrics: text }),
+  });
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || `Request failed (${res.status})`);
+  }
+  const data = await res.json();
+  return data.song;
+}
+
 // ---------- Hidden songs ----------
 // Hiding is a soft disable: the song and its scores are kept, it is only left
 // out of Classic and Mystery rounds. With the server running the flag is also

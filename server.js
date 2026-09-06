@@ -36,9 +36,10 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    // ---------- API: add a custom song ----------
+    // ---------- API: add / edit a custom song ----------
     if (urlPath === "/api/songs") {
       if (req.method === "POST") return saveSong(req, res);
+      if (req.method === "PUT") return updateSong(req, res);
       res
         .writeHead(405, { "Content-Type": "text/plain" })
         .end("Method not allowed");
@@ -264,6 +265,108 @@ function saveSong(req, res) {
     try {
       fs.writeFileSync(target, lyrics, "utf8");
       songsData.songs.push(entry);
+      fs.writeFileSync(SONGS_FILE, JSON.stringify(songsData, null, 2), "utf8");
+    } catch (e) {
+      res
+        .writeHead(500, { "Content-Type": "text/plain" })
+        .end("Could not save song");
+      return;
+    }
+
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify({ ok: true, song: entry }));
+  });
+}
+
+// Overwrite the details and lyrics of a song that is already in the catalog.
+// The `file` name never changes, so saved scores (which are keyed by file)
+// stay attached to the song even after it is renamed.
+function updateSong(req, res) {
+  let body = "";
+  let tooBig = false;
+  req.on("data", (chunk) => {
+    body += chunk;
+    if (body.length > 100_000) {
+      tooBig = true;
+      req.destroy();
+    }
+  });
+  req.on("end", () => {
+    if (tooBig) {
+      res
+        .writeHead(413, { "Content-Type": "text/plain" })
+        .end("Payload too large");
+      return;
+    }
+    let data;
+    try {
+      data = JSON.parse(body);
+    } catch {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Invalid JSON");
+      return;
+    }
+
+    const file = String(data.file || "").slice(0, 200);
+    const title = String(data.title || "")
+      .trim()
+      .slice(0, 200);
+    const artist = String(data.artist || "")
+      .trim()
+      .slice(0, 200);
+    const language = String(data.language || "en")
+      .trim()
+      .toLowerCase()
+      .slice(0, 10);
+    const lyrics = String(data.lyrics || "")
+      .replace(/\r\n/g, "\n")
+      .slice(0, 50_000);
+
+    if (!file) {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Missing song");
+      return;
+    }
+    if (!title) {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Missing title");
+      return;
+    }
+    if (!lyrics.trim()) {
+      res
+        .writeHead(400, { "Content-Type": "text/plain" })
+        .end("Missing lyrics");
+      return;
+    }
+
+    let songsData;
+    try {
+      songsData = JSON.parse(fs.readFileSync(SONGS_FILE, "utf8"));
+    } catch {
+      songsData = { songs: [] };
+    }
+    if (!Array.isArray(songsData.songs)) songsData.songs = [];
+
+    // Only files already listed in the catalog can be written to, and the
+    // path is taken from the catalog rather than from the request.
+    const entry = songsData.songs.find((s) => s && s.file === file);
+    if (!entry) {
+      res.writeHead(404, { "Content-Type": "text/plain" }).end("Unknown song");
+      return;
+    }
+
+    // Final guard: the resolved path must stay inside the lyrics folder.
+    const target = path.normalize(
+      path.join(LYRICS_DIR, path.basename(entry.file)),
+    );
+    if (!target.startsWith(LYRICS_DIR)) {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Bad file name");
+      return;
+    }
+
+    entry.title = title;
+    entry.artist = artist;
+    entry.language = language;
+
+    try {
+      fs.writeFileSync(target, lyrics, "utf8");
       fs.writeFileSync(SONGS_FILE, JSON.stringify(songsData, null, 2), "utf8");
     } catch (e) {
       res

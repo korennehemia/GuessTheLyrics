@@ -34,7 +34,7 @@
         <button id="modeLibraryBtn" class="mode-card mode-library" type="button">
           <span class="mode-emoji">📚</span>
           <span class="mode-name">My Library</span>
-          <span class="mode-desc">View, Add or Disable songs from games</span>
+          <span class="mode-desc">View, add, edit or disable songs from games</span>
         </button>
       </div>
     </section>
@@ -61,7 +61,7 @@
         <button id="libraryAddBtn" class="btn btn-secondary" type="button">➕ Add song</button>
       </div>
       <p class="muted library-hint">
-        🚫 disables a song but don't worry, you can enable it again anytime.
+        ✏️ edits a song's details and lyrics · 🚫 disables a song but don't worry, you can enable it again anytime.
       </p>
       <div class="detail-meta library-stats">
         <span class="chip" id="libraryActiveChip">… in play</span>
@@ -74,10 +74,10 @@
       <p id="libraryEmpty" class="muted hidden">No songs match your search.</p>
     </section>
 
-    <!-- Add song screen -->
+    <!-- Add / edit song screen -->
     <section id="addScreen" class="screen hidden">
       <button id="addBackBtn" class="btn btn-ghost" type="button">← Library</button>
-      <h2>Add a song</h2>
+      <h2 id="addScreenTitle">Add a song</h2>
       <form id="addSongForm" class="add-form" novalidate>
         <label class="add-field">
           <span>Song name</span>
@@ -184,14 +184,15 @@
         <h2>Pop Quiz</h2>
         <p class="muted">
           A group game. Everyone takes turns: you get one line from a song and
-          three songs it might belong to. Name the right one and bank the points.
+          three songs it might belong to. Answer fast — the points tick down
+          every second you spend thinking.
         </p>
       </div>
 
       <div class="detail-meta">
         <span class="chip" id="quizSummaryChip">… questions</span>
         <span class="chip" id="quizPoolChip">… songs</span>
-        <span class="chip">🎯 10 pts per hit</span>
+        <span class="chip">⏱️ 100 pts, −5 per second</span>
       </div>
 
       <div class="quiz-config">
@@ -227,6 +228,7 @@
     <section id="quizGameScreen" class="screen hidden">
       <div class="quiz-topbar">
         <span class="chip" id="quizRoundChip">Round 1 / 5</span>
+        <span class="chip quiz-points-chip" id="quizPointsChip">🎯 100 pts</span>
         <button id="quizQuitBtn" class="btn btn-ghost" type="button">🏠 Exit</button>
       </div>
 
@@ -244,6 +246,7 @@
       <p class="quiz-prompt">Which song is that line from?</p>
       <div class="quiz-options" id="quizOptions"></div>
       <p id="quizFeedback" class="quiz-feedback"></p>
+      <button id="quizNextBtn" class="btn btn-primary btn-block quiz-next hidden" type="button">Next ▸</button>
     </section>
 
     <!-- Challenge screen -->
@@ -262,9 +265,9 @@
             <span class="stat-label">Words used</span>
             <span class="stat-value" id="wordCost">0</span>
           </div>
-          <div class="stat">
+          <div class="stat" id="wordsFoundStat">
             <span class="stat-label">Found</span>
-            <span class="stat-value" id="wordsFound">0 / 0</span>
+            <span class="stat-value" id="wordsFound">0 / 0 (0%)</span>
           </div>
         </div>
       </div>
@@ -335,12 +338,12 @@
       </div>
     </div>
 
-    <!-- Pop Quiz standings: shown between rounds and at the end of the game -->
+    <!-- Pop Quiz podium: shown between rounds and at the end of the game -->
     <div id="quizOverlay" class="overlay hidden">
       <div class="overlay-card">
         <h2 id="quizOverlayTitle">Round complete</h2>
         <p id="quizOverlayText" class="muted"></p>
-        <ol id="quizStandings" class="leaderboard-list quiz-standings"></ol>
+        <div id="quizPodium" class="quiz-podium"></div>
         <button id="quizContinueBtn" class="btn btn-secondary btn-block" type="button">Next round ▸</button>
         <div class="overlay-actions hidden" id="quizOverlayActions">
           <button id="quizExitBtn" class="btn btn-primary" type="button">🏠 Exit to home</button>

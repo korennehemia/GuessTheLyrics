@@ -370,7 +370,7 @@
       "file": "כלבויניקית.txt",
       "title": "כלבויניקית",
       "artist": "איזי",
-      "language": "en"
+      "language": "he"
     },
     {
       "file": "Love On The Brain.txt",
@@ -407,6 +407,24 @@
       "title": "Bring Me To Life",
       "artist": "Evanessence",
       "language": "en"
+    },
+    {
+      "file": "יפה כלבנה.txt",
+      "title": "יפה כלבנה",
+      "artist": "אביתר בנאי",
+      "language": "he"
+    },
+    {
+      "file": "בחורה טובה.txt",
+      "title": "בחורה טובה",
+      "artist": "אושר כהן",
+      "language": "he"
+    },
+    {
+      "file": "הרקדן האוטומטי.txt",
+      "title": "הרקדן האוטומטי",
+      "artist": "צביקה פיק",
+      "language": "he"
     }
   ]
 }

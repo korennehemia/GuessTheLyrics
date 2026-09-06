@@ -603,8 +603,8 @@ body {
   position: relative;
   min-width: 0;
   padding: 14px 16px;
-  /* Room for the toggle pinned in the corner (mirrored for RTL songs). */
-  padding-inline-end: 52px;
+  /* Room for the action buttons pinned in the corner (mirrored for RTL). */
+  padding-inline-end: 96px;
   background: var(--bg-elev-2);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -622,12 +622,17 @@ body {
 }
 .library-item.is-hidden .artist { color: rgba(248, 113, 113, 0.72); }
 
-/* The 🚫 toggle: greyed out while the song is in play, lit up in red once it
-   has been switched off. */
-.library-toggle {
+/* The ✏️ and 🚫 buttons, pinned to the corner of the row. Both sit greyed out
+   until hovered; the toggle also lights up in red once switched off. */
+.library-actions {
   position: absolute;
   top: 10px;
   inset-inline-end: 10px;
+  display: flex;
+  gap: 6px;
+}
+.library-edit,
+.library-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -645,6 +650,18 @@ body {
   transition: filter 0.14s ease, opacity 0.14s ease, background 0.14s ease,
     border-color 0.14s ease, transform 0.1s ease;
 }
+.library-edit:hover {
+  filter: none;
+  opacity: 1;
+  border-color: rgba(129, 140, 248, 0.6);
+  background: rgba(129, 140, 248, 0.16);
+  transform: translateY(-1px);
+}
+.library-edit:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3);
+}
+.library-edit:disabled { cursor: not-allowed; transform: none; }
 .library-toggle:hover {
   filter: none;
   opacity: 1;
@@ -863,10 +880,87 @@ body {
 .quiz-feedback[data-tone="ok"] { color: var(--good); }
 .quiz-feedback[data-tone="warn"] { color: var(--danger); }
 
-.quiz-standings { margin-top: 16px; text-align: left; }
-.quiz-standings .lb-main { justify-content: space-between; }
-/* No separator needed — the score sits on the far right of the row. */
-.quiz-standings .lb-user::after { content: none; }
+/* Appears once the answer is graded: the result stays put until the next
+   player says they're ready. */
+.quiz-next { flex: 0 0 auto; margin-top: 12px; }
+
+/* Live value of the question, draining a little every second. */
+.quiz-points-chip {
+  font-variant-numeric: tabular-nums;
+  border-color: rgba(251, 146, 60, 0.5);
+  background: rgba(251, 146, 60, 0.14);
+  color: #fdba74;
+}
+.quiz-points-chip.is-low {
+  border-color: rgba(248, 113, 113, 0.55);
+  background: rgba(248, 113, 113, 0.14);
+  color: #fca5a5;
+}
+
+/* Only the top three make the podium: 2nd stands left of the winner, 3rd right. */
+.quiz-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+.podium-step {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.podium-medal { font-size: 1.7rem; line-height: 1; }
+.podium-name {
+  max-width: 100%;
+  margin-top: 6px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.podium-points {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.podium-block {
+  width: 100%;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px 10px 0 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  transform-origin: bottom;
+  animation: podium-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.place-1 .podium-block {
+  height: 92px;
+  color: #422006;
+  background: linear-gradient(180deg, #fcd34d, #f59e0b);
+}
+.place-2 .podium-block {
+  height: 68px;
+  color: #1f2937;
+  background: linear-gradient(180deg, #e2e8f0, #94a3b8);
+}
+.place-3 .podium-block {
+  height: 50px;
+  color: #2b1600;
+  background: linear-gradient(180deg, #e0a878, #b45309);
+}
+@keyframes podium-rise {
+  from { transform: scaleY(0.1); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
 #quizContinueBtn { margin-top: 18px; }
 
 /* ---------- Mystery Song ---------- */

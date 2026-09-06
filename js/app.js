@@ -9,6 +9,8 @@ import {
   getCustomSongs,
   getLocalLyrics,
   saveSong,
+  updateSong,
+  hasServerApi,
   getHiddenSongs,
   setSongHidden,
 } from "./storage.js";
@@ -26,18 +28,20 @@ const MYSTERY_HISTORY = 8;
 const QUIZ_ROUNDS_KEY = "guessLyrics.quizRounds";
 const QUIZ_LANG_KEY = "guessLyrics.quizLanguage";
 const QUIZ_PLAYERS_KEY = "guessLyrics.quizPlayers";
-const QUIZ_POINTS = 10; // per correct answer
+// A correct answer is worth the most the instant the options appear and melts
+// away while the player thinks, down to a floor so a slow answer still counts.
+const QUIZ_MAX_POINTS = 100;
+const QUIZ_MIN_POINTS = 20;
+const QUIZ_POINT_DROP = 5; // points lost per second
 const QUIZ_OPTIONS = 3; // songs offered per question
-// How long the answer stays on screen before the next player is up, and how
-// long the between-rounds scoreboard lingers.
-const QUIZ_ANSWER_MS = 2400;
-const QUIZ_STANDINGS_MS = 4000;
 
 const state = {
   songs: [], // [{ file, title, artist, language }]
   users: [], // active player names
   user: "Guest", // currently selected player
   mode: "classic", // "classic" | "mystery" | "quiz"
+  serverMode: false, // true when the Node API is reachable (songs.json writable)
+  editingSong: null, // song being edited on the add/edit screen, if any
   current: null, // active song meta
   tokens: [], // parsed lyric tokens
   totalWords: 0, // non-unique word count
@@ -61,7 +65,8 @@ const state = {
     turn: 0, // index into players
     question: null, // { song, line, options, answered }
     usedFiles: [], // songs already used as an answer
-    timeoutId: null, // pending auto-advance
+    askedAt: 0, // when the live question appeared, for time-based scoring
+    tickId: null, // interval driving the points countdown
   },
 };
 
@@ -105,6 +110,7 @@ const el = {
   libraryActiveChip: document.getElementById("libraryActiveChip"),
   libraryHiddenChip: document.getElementById("libraryHiddenChip"),
   addScreen: document.getElementById("addScreen"),
+  addScreenTitle: document.getElementById("addScreenTitle"),
   addBackBtn: document.getElementById("addBackBtn"),
   addSongForm: document.getElementById("addSongForm"),
   addTitle: document.getElementById("addTitle"),
@@ -128,6 +134,7 @@ const el = {
   timerLabel: document.getElementById("timerLabel"),
   wordCostStat: document.getElementById("wordCostStat"),
   wordCost: document.getElementById("wordCost"),
+  wordsFoundStat: document.getElementById("wordsFoundStat"),
   wordsFound: document.getElementById("wordsFound"),
   progressFill: document.getElementById("progressFill"),
   guessInput: document.getElementById("guessInput"),
@@ -159,6 +166,7 @@ const el = {
   quizStartBtn: document.getElementById("quizStartBtn"),
   quizGameScreen: document.getElementById("quizGameScreen"),
   quizRoundChip: document.getElementById("quizRoundChip"),
+  quizPointsChip: document.getElementById("quizPointsChip"),
   quizQuitBtn: document.getElementById("quizQuitBtn"),
   quizScoreboard: document.getElementById("quizScoreboard"),
   quizTurn: document.getElementById("quizTurn"),
@@ -166,10 +174,11 @@ const el = {
   quizLine: document.getElementById("quizLine"),
   quizOptions: document.getElementById("quizOptions"),
   quizFeedback: document.getElementById("quizFeedback"),
+  quizNextBtn: document.getElementById("quizNextBtn"),
   quizOverlay: document.getElementById("quizOverlay"),
   quizOverlayTitle: document.getElementById("quizOverlayTitle"),
   quizOverlayText: document.getElementById("quizOverlayText"),
-  quizStandings: document.getElementById("quizStandings"),
+  quizPodium: document.getElementById("quizPodium"),
   quizContinueBtn: document.getElementById("quizContinueBtn"),
   quizOverlayActions: document.getElementById("quizOverlayActions"),
   quizExitBtn: document.getElementById("quizExitBtn"),
@@ -223,6 +232,14 @@ function tokenize(text) {
 
 // ---------- Song loading ----------
 async function loadSongs() {
+  // Catalog songs can only be edited when the backend is there to write the
+  // change to disk; on static hosting only browser-added songs are editable.
+  try {
+    state.serverMode = await hasServerApi();
+  } catch {
+    state.serverMode = false;
+  }
+
   try {
     const res = await fetch(SONGS_URL, { cache: "no-store" });
     if (!res.ok) throw new Error(`songs ${res.status}`);
@@ -503,9 +520,11 @@ async function startChallenge(song) {
   el.pauseOverlay.classList.add("hidden");
   el.showResultsBtn.classList.add("hidden");
 
-  // Mystery-only chrome.
+  // Mystery-only chrome. Only distinct words matter there, so the raw
+  // found/total counter is hidden in favour of the "Words used" stat.
   el.mysteryPanel.classList.toggle("hidden", !mystery);
   el.wordCostStat.classList.toggle("hidden", !mystery);
+  el.wordsFoundStat.classList.toggle("hidden", mystery);
   el.timerLabel.textContent = mystery ? "Elapsed" : "Time";
   el.mysteryTitleGuess.value = "";
   el.mysteryArtistGuess.value = "";
@@ -585,9 +604,11 @@ function updateTimerDisplay() {
 }
 
 function updateStats() {
-  el.wordsFound.textContent = `${state.foundWords} / ${state.totalWords}`;
   const pct =
     state.totalWords === 0 ? 0 : (state.foundWords / state.totalWords) * 100;
+  el.wordsFound.textContent = `${state.foundWords} / ${state.totalWords} (${Math.round(
+    pct,
+  )}%)`;
   el.progressFill.style.width = `${pct}%`;
   if (state.revealedKeys) el.wordCost.textContent = state.revealedKeys.size;
 }
@@ -834,8 +855,7 @@ function hideAllScreens() {
 function leaveGame() {
   stopTimer();
   stopConfetti();
-  clearTimeout(state.quiz.timeoutId);
-  state.quiz.timeoutId = null;
+  stopQuizTicker();
   state.running = false;
   el.resultOverlay.classList.add("hidden");
   el.pauseOverlay.classList.add("hidden");
@@ -925,7 +945,24 @@ function renderLibrary() {
     toggle.setAttribute("aria-pressed", String(Boolean(song.hidden)));
     toggle.addEventListener("click", () => toggleSongHidden(song, toggle));
 
-    li.append(info, toggle);
+    const actions = document.createElement("div");
+    actions.className = "library-actions";
+
+    // Editing rewrites songs.json plus the lyrics file, so it is only offered
+    // for songs this browser owns or when the server is running.
+    if (song.local || state.serverMode) {
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "library-edit";
+      edit.textContent = "\u{270F}\u{FE0F}";
+      edit.title = `Edit “${song.title}” details and lyrics`;
+      edit.setAttribute("aria-label", edit.title);
+      edit.addEventListener("click", () => openEditSong(song));
+      actions.appendChild(edit);
+    }
+    actions.appendChild(toggle);
+
+    li.append(info, actions);
     el.libraryList.appendChild(li);
   }
 }
@@ -1232,7 +1269,6 @@ function startQuiz() {
   quiz.usedFiles = [];
   quiz.scores = {};
   for (const name of quiz.players) quiz.scores[name] = 0;
-
   leaveGame();
   hideAllScreens();
   el.appHeader.classList.add("hidden");
@@ -1326,14 +1362,53 @@ function currentQuizPlayer() {
   return quiz.players[quiz.turn] || quiz.players[0] || "Guest";
 }
 
+// ---------- Time-based scoring ----------
+// The pot starts full and drains a little every second, so the fastest finger
+// on the same answer wins. A wrong answer is worth nothing either way.
+function quizPointsFor(seconds) {
+  const points = QUIZ_MAX_POINTS - Math.floor(seconds) * QUIZ_POINT_DROP;
+  return Math.max(QUIZ_MIN_POINTS, points);
+}
+
+function quizSecondsSpent() {
+  return quiz.askedAt ? (Date.now() - quiz.askedAt) / 1000 : 0;
+}
+
+function updateQuizPointsChip(points = quizPointsFor(quizSecondsSpent())) {
+  el.quizPointsChip.textContent = `\u{1F3AF} ${points} pts`;
+  el.quizPointsChip.classList.toggle("is-low", points <= QUIZ_MIN_POINTS);
+}
+
+// Ticks faster than once a second so the chip never lags behind the value the
+// player would actually bank.
+function startQuizTicker() {
+  stopQuizTicker();
+  quiz.askedAt = Date.now();
+  updateQuizPointsChip();
+  quiz.tickId = setInterval(updateQuizPointsChip, 200);
+}
+
+function stopQuizTicker() {
+  if (quiz.tickId) {
+    clearInterval(quiz.tickId);
+    quiz.tickId = null;
+  }
+}
+
 async function nextQuizQuestion() {
   el.quizRoundChip.textContent = `Round ${quiz.round} / ${quiz.rounds}`;
   el.quizTurnName.textContent = currentQuizPlayer();
   // The feedback line keeps its space so grading doesn't shift the options.
   el.quizFeedback.textContent = "";
   delete el.quizFeedback.dataset.tone;
+  el.quizNextBtn.classList.add("hidden");
   el.quizLine.textContent = "…";
   el.quizOptions.innerHTML = "";
+  // The clock only starts once the question is on screen, so waiting on the
+  // lyrics file never costs the player points.
+  stopQuizTicker();
+  quiz.askedAt = 0;
+  updateQuizPointsChip(QUIZ_MAX_POINTS);
   renderQuizScoreboard();
   // Re-trigger the "your turn" flash for the player coming up.
   el.quizTurn.classList.remove("is-new");
@@ -1377,6 +1452,8 @@ function renderQuizQuestion() {
     btn.addEventListener("click", () => answerQuiz(option));
     el.quizOptions.appendChild(btn);
   }
+
+  startQuizTicker();
 }
 
 function renderQuizScoreboard() {
@@ -1404,10 +1481,13 @@ function answerQuiz(option) {
   const question = quiz.question;
   if (!question || question.answered) return;
   question.answered = true;
+  stopQuizTicker();
 
   const player = currentQuizPlayer();
   const correct = option.file === question.song.file;
-  if (correct) quiz.scores[player] = (quiz.scores[player] || 0) + QUIZ_POINTS;
+  const points = correct ? quizPointsFor(quizSecondsSpent()) : 0;
+  if (correct) quiz.scores[player] = (quiz.scores[player] || 0) + points;
+  updateQuizPointsChip(points);
 
   for (const btn of el.quizOptions.querySelectorAll(".quiz-option")) {
     btn.disabled = true;
@@ -1420,16 +1500,30 @@ function answerQuiz(option) {
     ? `${question.song.title} — ${question.song.artist}`
     : question.song.title;
   el.quizFeedback.textContent = correct
-    ? `\u2705 Spot on, ${player}. +${QUIZ_POINTS} points.`
+    ? `\u2705 Spot on, ${player}. +${points} points.`
     : `\u274C Not quite — it was “${answer}”.`;
   el.quizFeedback.dataset.tone = correct ? "ok" : "warn";
   renderQuizScoreboard();
+  showQuizNextButton();
+}
 
-  quiz.timeoutId = setTimeout(advanceQuiz, QUIZ_ANSWER_MS);
+// The graded question stays on screen for as long as the group wants: the
+// device gets handed over, and the clock only restarts when Next is tapped.
+function showQuizNextButton() {
+  const lastTurn = quiz.turn >= quiz.players.length - 1;
+  if (!lastTurn) {
+    el.quizNextBtn.textContent = `${quiz.players[quiz.turn + 1]} is up \u25B8`;
+  } else if (quiz.round >= quiz.rounds) {
+    el.quizNextBtn.textContent = "\u{1F3C1} Final podium \u25B8";
+  } else {
+    el.quizNextBtn.textContent = `\u{1F3C6} Round ${quiz.round} podium \u25B8`;
+  }
+  el.quizNextBtn.classList.remove("hidden");
+  el.quizNextBtn.focus();
 }
 
 function advanceQuiz() {
-  quiz.timeoutId = null;
+  el.quizNextBtn.classList.add("hidden");
   quiz.turn += 1;
   if (quiz.turn < quiz.players.length) {
     nextQuizQuestion();
@@ -1439,7 +1533,7 @@ function advanceQuiz() {
   // Everyone has played this round — show where things stand.
   quiz.turn = 0;
   if (quiz.round >= quiz.rounds) endQuiz();
-  else showQuizStandings();
+  else showQuizPodium();
 }
 
 // Sorted best-first; ties keep the turn order so the list never jitters.
@@ -1449,73 +1543,71 @@ function quizStandings() {
   );
 }
 
-function renderQuizStandings(final) {
-  el.quizStandings.innerHTML = "";
-  const ranking = quizStandings();
-  const top = quiz.scores[ranking[0]] || 0;
+// Only the top three make it onto the podium. Second stands to the left of the
+// winner and third to the right, the way a real one is laid out.
+function renderQuizPodium(final) {
+  el.quizPodium.innerHTML = "";
+  const ranking = quizStandings().slice(0, 3);
+  const medals = ["\u{1F947}", "\u{1F948}", "\u{1F949}"];
 
-  ranking.forEach((name, index) => {
-    const li = document.createElement("li");
-    const row = document.createElement("div");
-    const leading = final && top > 0 && (quiz.scores[name] || 0) === top;
-    row.className = leading ? "leaderboard-row you" : "leaderboard-row";
+  for (const place of [1, 0, 2]) {
+    const name = ranking[place];
+    if (!name) continue;
 
-    const rank = document.createElement("span");
-    rank.className = "lb-rank";
-    rank.textContent = leading ? "\u{1F451}" : `${index + 1}.`;
+    const step = document.createElement("div");
+    step.className = `podium-step place-${place + 1}`;
 
-    const main = document.createElement("span");
-    main.className = "lb-main";
+    const medal = document.createElement("span");
+    medal.className = "podium-medal";
+    // The winner gets a crown once the whole quiz is over.
+    medal.textContent = final && place === 0 ? "\u{1F451}" : medals[place];
 
     const who = document.createElement("span");
-    who.className = "lb-user";
+    who.className = "podium-name";
     who.dir = "auto";
     who.textContent = name;
+    who.title = name;
 
     const pts = document.createElement("span");
-    pts.className = "lb-score";
+    pts.className = "podium-points";
     pts.textContent = `${quiz.scores[name] || 0} pts`;
 
-    main.append(who, pts);
-    row.append(rank, main);
-    li.appendChild(row);
-    el.quizStandings.appendChild(li);
-  });
+    const block = document.createElement("div");
+    block.className = "podium-block";
+    block.textContent = String(place + 1);
+
+    step.append(medal, who, pts, block);
+    el.quizPodium.appendChild(step);
+  }
 }
 
-function showQuizStandings() {
-  renderQuizStandings(false);
-  el.quizOverlayTitle.textContent = `\u{1F4CA} Round ${quiz.round} done`;
-  el.quizOverlayText.textContent = `${quiz.rounds - quiz.round} round${
-    quiz.rounds - quiz.round === 1 ? "" : "s"
-  } to go.`;
+function showQuizPodium() {
+  renderQuizPodium(false);
+  const left = quiz.rounds - quiz.round;
+  el.quizOverlayTitle.textContent = `\u{1F3C6} Round ${quiz.round} podium`;
+  el.quizOverlayText.textContent = `${left} round${left === 1 ? "" : "s"} to go.`;
   el.quizOverlayActions.classList.add("hidden");
   el.quizContinueBtn.classList.remove("hidden");
   el.quizOverlay.classList.remove("hidden");
-
-  quiz.timeoutId = setTimeout(continueQuiz, QUIZ_STANDINGS_MS);
 }
 
-// Used by both the countdown and the "Next round" button.
+// Starts the next round once the group is ready.
 function continueQuiz() {
-  clearTimeout(quiz.timeoutId);
-  quiz.timeoutId = null;
   el.quizOverlay.classList.add("hidden");
   quiz.round += 1;
   nextQuizQuestion();
 }
 
 function endQuiz(reason) {
-  clearTimeout(quiz.timeoutId);
-  quiz.timeoutId = null;
+  stopQuizTicker();
   quiz.question = null;
 
-  renderQuizStandings(true);
+  renderQuizPodium(true);
   const ranking = quizStandings();
   const best = quiz.scores[ranking[0]] || 0;
   const winners = ranking.filter((n) => (quiz.scores[n] || 0) === best);
 
-  el.quizOverlayTitle.textContent = "\u{1F3C1} Final scores";
+  el.quizOverlayTitle.textContent = "\u{1F3C1} Final podium";
   if (reason) el.quizOverlayText.textContent = reason;
   else if (best === 0)
     el.quizOverlayText.textContent = "Nobody landed one. Brutal round.";
@@ -1534,22 +1626,59 @@ function quitQuiz() {
   goHome();
 }
 
-// ---------- Add a custom song ----------
+// ---------- Add / edit a song ----------
 
-function openAddSong() {
+// One screen serves both jobs: `song` is null when adding, or the catalog
+// entry being rewritten when editing.
+function openSongForm(song) {
   hideAllScreens();
   el.appHeader.classList.remove("hidden");
   el.addScreen.classList.remove("hidden");
 
+  state.editingSong = song || null;
   el.addSongForm.reset();
   el.addError.classList.add("hidden");
   el.addError.textContent = "";
+  el.addScreenTitle.textContent = song ? "✏️ Edit song" : "Add a song";
+  el.addSubmitBtn.textContent = song ? "Save changes" : "Save song";
+  el.addSubmitBtn.disabled = false;
   el.addTitle.focus();
 }
 
-async function submitNewSong(event) {
+function openAddSong() {
+  openSongForm(null);
+}
+
+async function openEditSong(song) {
+  openSongForm(song);
+  el.addTitle.value = song.title || "";
+  el.addArtist.value = song.artist || "";
+  el.addLanguage.value = song.language === "he" ? "he" : "en";
+
+  // Lyrics live in a separate file, so they are fetched before the form is
+  // usable. Bail out of the update if the player navigated away meanwhile.
+  el.addLyrics.placeholder = "Loading lyrics…";
+  el.addSubmitBtn.disabled = true;
+  try {
+    const text = await loadLyrics(song.file);
+    if (state.editingSong !== song) return;
+    el.addLyrics.value = text;
+  } catch (err) {
+    console.error("Failed to load the lyrics for editing:", err);
+    if (state.editingSong !== song) return;
+    showAddError("Could not load the lyrics for this song.");
+  } finally {
+    if (state.editingSong === song) {
+      el.addLyrics.placeholder = "Paste the full lyrics here…";
+      el.addSubmitBtn.disabled = false;
+    }
+  }
+}
+
+async function submitSongForm(event) {
   event.preventDefault();
 
+  const song = state.editingSong;
   const title = el.addTitle.value.trim();
   const artist = el.addArtist.value.trim();
   const language = el.addLanguage.value;
@@ -1560,12 +1689,20 @@ async function submitNewSong(event) {
 
   el.addSubmitBtn.disabled = true;
   try {
-    await saveSong({ title, artist, language, lyrics });
+    if (song) {
+      await updateSong({ file: song.file, title, artist, language, lyrics });
+      // The pre-game screen caches the lyrics it preloaded — drop it so the
+      // next round picks up the edit.
+      state.loadedText = null;
+      state.loadedFile = null;
+    } else {
+      await saveSong({ title, artist, language, lyrics });
+    }
     await loadSongs();
     goToLibrary();
   } catch (err) {
-    console.error("Failed to add song:", err);
-    showAddError("Could not save the song. Please try again.");
+    console.error(song ? "Failed to update song:" : "Failed to add song:", err);
+    showAddError(err.message || "Could not save the song. Please try again.");
   } finally {
     el.addSubmitBtn.disabled = false;
   }
@@ -1756,7 +1893,7 @@ el.librarySearch.addEventListener("input", renderLibrary);
 el.libraryAddBtn.addEventListener("click", openAddSong);
 el.addBackBtn.addEventListener("click", goToLibrary);
 el.addCancelBtn.addEventListener("click", goToLibrary);
-el.addSongForm.addEventListener("submit", submitNewSong);
+el.addSongForm.addEventListener("submit", submitSongForm);
 for (const select of userSelects()) {
   select.addEventListener("change", (e) => setUser(e.target.value));
 }
@@ -1815,6 +1952,7 @@ el.quizLanguage.addEventListener("change", () => {
 });
 el.quizStartBtn.addEventListener("click", startQuiz);
 el.quizQuitBtn.addEventListener("click", quitQuiz);
+el.quizNextBtn.addEventListener("click", advanceQuiz);
 el.quizContinueBtn.addEventListener("click", continueQuiz);
 el.quizExitBtn.addEventListener("click", quitQuiz);
 el.quizAgainBtn.addEventListener("click", () => {
