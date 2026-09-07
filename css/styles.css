@@ -116,13 +116,19 @@ body {
 .muted { color: var(--muted); }
 
 /* ---------- Song selection ---------- */
+/* Equal side columns keep the heading dead centre whatever the back button
+   and the trailing slot happen to measure. */
 .select-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
 }
-.select-head h2 { margin: 0; }
+.select-head > :first-child { justify-self: start; }
+.select-head > :last-child { justify-self: end; }
+.select-head h2 { margin: 0; text-align: center; }
+/* Pill-shaped, so it hugs its content instead of stretching down the column. */
+.select-user { flex: 0 0 auto; align-self: flex-start; }
 .select-row { flex: 0 0 auto; margin: 8px 0 16px; }
 
 #songSearch, #librarySearch, #guessInput {
@@ -596,6 +602,79 @@ body {
 /* ---------- My Library ---------- */
 .select-head { flex: 0 0 auto; }
 .select-head-spacer { flex: 0 0 auto; min-width: 84px; }
+
+.library-tabs {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev-2);
+}
+.library-tab {
+  flex: 1 1 0;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.library-tab:hover { color: var(--text); }
+.library-tab.is-active {
+  color: #fff;
+  background: var(--accent);
+}
+.library-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.35);
+}
+
+/* Each tab owns the rest of the card and hands scrolling to its own list. */
+.library-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Text box + button side by side: the song search and the new-player field. */
+.library-add-row {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 10px;
+}
+.library-add-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 13px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.library-add-row input::placeholder { color: var(--muted); }
+.library-add-row input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.25);
+}
+.library-add-row .btn { flex: 0 0 auto; }
+#addUserError { flex: 0 0 auto; margin-bottom: 10px; font-size: 0.9rem; }
+
+/* Players have no per-row buttons, so they don't need the corner gutter. */
+.library-player { padding-inline-end: 16px; }
+
 .library-hint { flex: 0 0 auto; margin: 12px 0 0; font-size: 0.9rem; line-height: 1.5; }
 .library-stats { flex: 0 0 auto; margin-top: 12px; }
 .library-list { gap: 12px; }
@@ -964,7 +1043,6 @@ body {
 #quizContinueBtn { margin-top: 18px; }
 
 /* ---------- Mystery Song ---------- */
-.select-head { flex-wrap: wrap; }
 .mystery-hero { text-align: center; margin: 6px 0 18px; }
 .mystery-hero-emoji { font-size: 2.6rem; line-height: 1; }
 .mystery-hero h2 {

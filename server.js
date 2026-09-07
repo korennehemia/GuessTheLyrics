@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 const SCORES_FILE = path.join(ROOT, "data", "scores.json");
 const SONGS_FILE = path.join(ROOT, "config", "songs.json");
+const USERS_FILE = path.join(ROOT, "config", "users.json");
 const LYRICS_DIR = path.join(ROOT, "config", "lyrics");
 
 const MIME = {
@@ -40,6 +41,15 @@ const server = http.createServer((req, res) => {
     if (urlPath === "/api/songs") {
       if (req.method === "POST") return saveSong(req, res);
       if (req.method === "PUT") return updateSong(req, res);
+      res
+        .writeHead(405, { "Content-Type": "text/plain" })
+        .end("Method not allowed");
+      return;
+    }
+
+    // ---------- API: add a player ----------
+    if (urlPath === "/api/users") {
+      if (req.method === "POST") return saveUser(req, res);
       res
         .writeHead(405, { "Content-Type": "text/plain" })
         .end("Method not allowed");
@@ -377,6 +387,79 @@ function updateSong(req, res) {
 
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(JSON.stringify({ ok: true, song: entry }));
+  });
+}
+
+// Append a player to config/users.json. Names are matched case-insensitively
+// so the same person can't end up in the list twice.
+function saveUser(req, res) {
+  let body = "";
+  let tooBig = false;
+  req.on("data", (chunk) => {
+    body += chunk;
+    if (body.length > 10_000) {
+      tooBig = true;
+      req.destroy();
+    }
+  });
+  req.on("end", () => {
+    if (tooBig) {
+      res
+        .writeHead(413, { "Content-Type": "text/plain" })
+        .end("Payload too large");
+      return;
+    }
+    let data;
+    try {
+      data = JSON.parse(body);
+    } catch {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Invalid JSON");
+      return;
+    }
+
+    const name = String(data.name || "")
+      .trim()
+      .slice(0, 60);
+    if (!name) {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Missing name");
+      return;
+    }
+
+    let usersData;
+    try {
+      usersData = JSON.parse(fs.readFileSync(USERS_FILE, "utf8"));
+    } catch {
+      usersData = { users: [] };
+    }
+    if (!Array.isArray(usersData.users)) usersData.users = [];
+
+    const taken = usersData.users.some(
+      (u) => String(u).trim().toLowerCase() === name.toLowerCase(),
+    );
+    if (taken) {
+      res
+        .writeHead(409, { "Content-Type": "text/plain" })
+        .end("That player already exists");
+      return;
+    }
+
+    usersData.users.push(name);
+    try {
+      // users.json is hand-edited too, so keep the trailing newline it ships with.
+      fs.writeFileSync(
+        USERS_FILE,
+        `${JSON.stringify(usersData, null, 2)}\n`,
+        "utf8",
+      );
+    } catch {
+      res
+        .writeHead(500, { "Content-Type": "text/plain" })
+        .end("Could not save player");
+      return;
+    }
+
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify({ ok: true, user: name }));
   });
 }
 

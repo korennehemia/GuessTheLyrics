@@ -11,6 +11,8 @@ import {
   saveSong,
   updateSong,
   hasServerApi,
+  getCustomUsers,
+  saveUser,
   getHiddenSongs,
   setSongHidden,
 } from "./storage.js";
@@ -78,6 +80,7 @@ const el = {
   modeMysteryBtn: document.getElementById("modeMysteryBtn"),
   selectScreen: document.getElementById("selectScreen"),
   selectBackBtn: document.getElementById("selectBackBtn"),
+  selectUserSelect: document.getElementById("selectUserSelect"),
   detailScreen: document.getElementById("detailScreen"),
   mysteryScreen: document.getElementById("mysteryScreen"),
   mysteryBackBtn: document.getElementById("mysteryBackBtn"),
@@ -109,6 +112,16 @@ const el = {
   libraryEmpty: document.getElementById("libraryEmpty"),
   libraryActiveChip: document.getElementById("libraryActiveChip"),
   libraryHiddenChip: document.getElementById("libraryHiddenChip"),
+  librarySongsTab: document.getElementById("librarySongsTab"),
+  libraryPlayersTab: document.getElementById("libraryPlayersTab"),
+  librarySongsPanel: document.getElementById("librarySongsPanel"),
+  libraryPlayersPanel: document.getElementById("libraryPlayersPanel"),
+  libraryPlayersChip: document.getElementById("libraryPlayersChip"),
+  libraryPlayerList: document.getElementById("libraryPlayerList"),
+  addUserForm: document.getElementById("addUserForm"),
+  addUserName: document.getElementById("addUserName"),
+  addUserBtn: document.getElementById("addUserBtn"),
+  addUserError: document.getElementById("addUserError"),
   addScreen: document.getElementById("addScreen"),
   addScreenTitle: document.getElementById("addScreenTitle"),
   addBackBtn: document.getElementById("addBackBtn"),
@@ -309,9 +322,11 @@ async function loadLyrics(file) {
 
 // ---------- Players ----------
 // The player list is read from config/users.json so it can be edited freely.
-// Both pre-game screens carry a picker, so they are kept in sync.
+// Every pre-game screen carries a picker, so they are kept in sync.
 function userSelects() {
-  return [el.userSelect, el.mysteryUserSelect].filter(Boolean);
+  return [el.userSelect, el.selectUserSelect, el.mysteryUserSelect].filter(
+    Boolean,
+  );
 }
 
 function renderUserSelects() {
@@ -343,6 +358,17 @@ async function loadUsers() {
     console.error("Failed to load users:", err);
     state.users = [];
   }
+
+  // Players added in the browser (static hosting only).
+  try {
+    const seen = new Set(state.users.map((n) => n.toLowerCase()));
+    for (const name of await getCustomUsers()) {
+      if (name && !seen.has(String(name).toLowerCase())) state.users.push(name);
+    }
+  } catch (err) {
+    console.error("Failed to load saved players:", err);
+  }
+
   if (state.users.length === 0) state.users = ["Guest"];
 
   const saved = localStorage.getItem(USER_STORAGE_KEY);
@@ -350,6 +376,7 @@ async function loadUsers() {
 
   restoreQuizPlayers();
   renderUserSelects();
+  renderLibraryPlayers();
 }
 
 // The quiz line-up is remembered between sessions; anyone who has since left
@@ -877,11 +904,25 @@ function goToSelect() {
 }
 
 // ---------- My Library ----------
+// Two tabs share the screen: the song catalog and the player roster.
+function showLibraryTab(tab) {
+  const players = tab === "players";
+  el.librarySongsTab.classList.toggle("is-active", !players);
+  el.libraryPlayersTab.classList.toggle("is-active", players);
+  el.librarySongsTab.setAttribute("aria-selected", String(!players));
+  el.libraryPlayersTab.setAttribute("aria-selected", String(players));
+  el.librarySongsPanel.classList.toggle("hidden", players);
+  el.libraryPlayersPanel.classList.toggle("hidden", !players);
+  if (players) renderLibraryPlayers();
+}
+
 function goToLibrary() {
   leaveGame();
   hideAllScreens();
   el.appHeader.classList.remove("hidden");
   el.libraryScreen.classList.remove("hidden");
+  el.addUserError.classList.add("hidden");
+  showLibraryTab("songs");
   renderLibrary();
 }
 
@@ -965,6 +1006,56 @@ function renderLibrary() {
     li.append(info, actions);
     el.libraryList.appendChild(li);
   }
+}
+
+// ---------- Library: players tab ----------
+function renderLibraryPlayers() {
+  const count = state.users.length;
+  el.libraryPlayersChip.textContent = `\u{1F465} ${count} player${count === 1 ? "" : "s"}`;
+
+  el.libraryPlayerList.innerHTML = "";
+  for (const name of state.users) {
+    const li = document.createElement("li");
+    li.className = "library-item library-player";
+    li.title = name;
+
+    const info = document.createElement("div");
+    info.className = "library-info";
+
+    const who = document.createElement("span");
+    who.className = "title";
+    who.dir = "auto";
+    who.textContent = name;
+    info.appendChild(who);
+
+    li.appendChild(info);
+    el.libraryPlayerList.appendChild(li);
+  }
+}
+
+async function submitNewUser(event) {
+  event.preventDefault();
+  const name = el.addUserName.value.trim();
+  if (!name) return showAddUserError("Please enter a player name.");
+
+  el.addUserBtn.disabled = true;
+  try {
+    await saveUser(name);
+    el.addUserName.value = "";
+    el.addUserError.classList.add("hidden");
+    await loadUsers();
+  } catch (err) {
+    console.error("Failed to add player:", err);
+    showAddUserError(err.message || "Could not save the player.");
+  } finally {
+    el.addUserBtn.disabled = false;
+    el.addUserName.focus();
+  }
+}
+
+function showAddUserError(message) {
+  el.addUserError.textContent = message;
+  el.addUserError.classList.remove("hidden");
 }
 
 async function toggleSongHidden(song, button) {
@@ -1891,6 +1982,9 @@ el.songSearch.addEventListener("input", renderSongList);
 el.libraryBackBtn.addEventListener("click", goHome);
 el.librarySearch.addEventListener("input", renderLibrary);
 el.libraryAddBtn.addEventListener("click", openAddSong);
+el.librarySongsTab.addEventListener("click", () => showLibraryTab("songs"));
+el.libraryPlayersTab.addEventListener("click", () => showLibraryTab("players"));
+el.addUserForm.addEventListener("submit", submitNewUser);
 el.addBackBtn.addEventListener("click", goToLibrary);
 el.addCancelBtn.addEventListener("click", goToLibrary);
 el.addSongForm.addEventListener("submit", submitSongForm);

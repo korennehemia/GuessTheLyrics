@@ -46,6 +46,10 @@
         <h2>Choose a song</h2>
         <span class="select-head-spacer" aria-hidden="true"></span>
       </div>
+      <div class="user-row select-user">
+        <label for="selectUserSelect">👤 Who's playing?</label>
+        <select id="selectUserSelect" aria-label="Choose player"></select>
+      </div>
       <div class="select-row">
         <input id="songSearch" type="search" placeholder="Search by title or artist…" autocomplete="off" />
       </div>
@@ -58,20 +62,44 @@
       <div class="select-head">
         <button id="libraryBackBtn" class="btn btn-ghost" type="button">← Modes</button>
         <h2>📚 My Library</h2>
-        <button id="libraryAddBtn" class="btn btn-secondary" type="button">➕ Add song</button>
+        <span class="select-head-spacer" aria-hidden="true"></span>
       </div>
-      <p class="muted library-hint">
-        ✏️ edits a song's details and lyrics · 🚫 disables a song but don't worry, you can enable it again anytime.
-      </p>
-      <div class="detail-meta library-stats">
-        <span class="chip" id="libraryActiveChip">… in play</span>
-        <span class="chip" id="libraryHiddenChip">… hidden</span>
+
+      <div class="library-tabs" role="tablist" aria-label="Library sections">
+        <button id="librarySongsTab" class="library-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="librarySongsPanel">🎵 Songs</button>
+        <button id="libraryPlayersTab" class="library-tab" type="button" role="tab" aria-selected="false" aria-controls="libraryPlayersPanel">👥 Players</button>
       </div>
-      <div class="select-row">
-        <input id="librarySearch" type="search" placeholder="Search by title or artist…" autocomplete="off" />
+
+      <div id="librarySongsPanel" class="library-panel" role="tabpanel" aria-labelledby="librarySongsTab">
+        <p class="muted library-hint">
+          ✏️ edits a song's details and lyrics · 🚫 disables a song but don't worry, you can enable it again anytime.
+        </p>
+        <div class="detail-meta library-stats">
+          <span class="chip" id="libraryActiveChip">… in play</span>
+          <span class="chip" id="libraryHiddenChip">… hidden</span>
+        </div>
+        <div class="library-add-row">
+          <input id="librarySearch" type="search" placeholder="Search by title or artist…" autocomplete="off" />
+          <button id="libraryAddBtn" class="btn btn-secondary" type="button">➕ Add song</button>
+        </div>
+        <ul id="libraryList" class="song-list library-list" aria-label="Library songs"></ul>
+        <p id="libraryEmpty" class="muted hidden">No songs match your search.</p>
       </div>
-      <ul id="libraryList" class="song-list library-list" aria-label="Library songs"></ul>
-      <p id="libraryEmpty" class="muted hidden">No songs match your search.</p>
+
+      <div id="libraryPlayersPanel" class="library-panel hidden" role="tabpanel" aria-labelledby="libraryPlayersTab">
+        <p class="muted library-hint">
+          Everyone added here shows up in the player pickers and in Pop Quiz.
+        </p>
+        <div class="detail-meta library-stats">
+          <span class="chip" id="libraryPlayersChip">… players</span>
+        </div>
+        <form id="addUserForm" class="library-add-row" novalidate>
+          <input id="addUserName" type="text" maxlength="60" placeholder="New player name…" autocomplete="off" dir="auto" />
+          <button id="addUserBtn" class="btn btn-secondary" type="submit">➕ Add player</button>
+        </form>
+        <p id="addUserError" class="add-error hidden"></p>
+        <ul id="libraryPlayerList" class="song-list library-list" aria-label="Players"></ul>
+      </div>
     </section>
 
     <!-- Add / edit song screen -->

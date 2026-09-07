@@ -7,6 +7,7 @@
 
 const SCORES_KEY = "guessLyrics.scores";
 const SONGS_KEY = "guessLyrics.customSongs";
+const USERS_KEY = "guessLyrics.customUsers";
 const LYRICS_KEY = "guessLyrics.lyrics:";
 const HIDDEN_KEY = "guessLyrics.hiddenSongs";
 
@@ -14,6 +15,7 @@ const HIDDEN_KEY = "guessLyrics.hiddenSongs";
 // (e.g. https://user.github.io/repo/).
 const SCORES_API = "api/scores";
 const SONGS_API = "api/songs";
+const USERS_API = "api/users";
 const HIDDEN_API = "api/songs/hidden";
 
 let apiProbe = null;
@@ -235,6 +237,45 @@ export async function updateSong({ file, title, artist, language, lyrics }) {
   }
   const data = await res.json();
   return data.song;
+}
+
+// ---------- Custom players ----------
+// Same deal as custom songs: with the server running the name is appended to
+// config/users.json and shared, otherwise it lives in this browser only.
+export async function getCustomUsers() {
+  if (await hasApi()) return []; // the server already wrote them into users.json
+  return readLocal(USERS_KEY, []);
+}
+
+export async function saveUser(name) {
+  const clean = String(name || "")
+    .trim()
+    .slice(0, 60);
+  if (!clean) throw new Error("Please enter a player name.");
+
+  if (await hasApi()) {
+    const res = await fetch(USERS_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: clean }),
+    });
+    if (!res.ok) {
+      const msg = await res.text();
+      throw new Error(msg || `Request failed (${res.status})`);
+    }
+    const data = await res.json();
+    return data.user;
+  }
+
+  const users = readLocal(USERS_KEY, []);
+  if (users.some((u) => String(u).toLowerCase() === clean.toLowerCase())) {
+    throw new Error("That player already exists.");
+  }
+  users.push(clean);
+  if (!writeLocal(USERS_KEY, users)) {
+    throw new Error("Not enough browser storage to save this player.");
+  }
+  return clean;
 }
 
 // ---------- Hidden songs ----------
