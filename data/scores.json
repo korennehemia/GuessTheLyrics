@@ -103,6 +103,19 @@
       "finished": false,
       "seconds": 23,
       "date": "2026-08-31T14:39:39.709Z"
+    },
+    {
+      "user": "Koren",
+      "file": "זאת שמעל לכל המצופה.txt",
+      "title": "זאת שמעל לכל המצופה",
+      "mode": "classic",
+      "words": 149,
+      "total": 155,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-09-07T12:39:19.668Z"
     }
   ]
 }
