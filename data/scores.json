@@ -116,6 +116,71 @@
       "finished": false,
       "seconds": null,
       "date": "2026-09-07T12:39:19.668Z"
+    },
+    {
+      "user": "Koren",
+      "file": "סחרחורת.txt",
+      "title": "סחרחורת",
+      "mode": "classic",
+      "words": 131,
+      "total": 281,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-09-07T14:15:10.721Z"
+    },
+    {
+      "user": "Koren",
+      "file": "הרקדן האוטומטי.txt",
+      "title": "הרקדן האוטומטי",
+      "mode": "classic",
+      "words": 166,
+      "total": 191,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-09-07T14:28:19.198Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Vienna.txt",
+      "title": "Vienna",
+      "mode": "classic",
+      "words": 109,
+      "total": 275,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-09-08T08:58:45.934Z"
+    },
+    {
+      "user": "Koren",
+      "file": "אולי נדבר.txt",
+      "title": "אולי נדבר",
+      "mode": "classic",
+      "words": 181,
+      "total": 200,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-09-09T09:12:23.147Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Mercy.txt",
+      "title": "Mercy",
+      "mode": "classic",
+      "words": 258,
+      "total": 259,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-09-09T13:50:32.425Z"
     }
   ]
 }

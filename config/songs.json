@@ -449,6 +449,36 @@
       "title": "סחרחורת",
       "artist": "טונה",
       "language": "he"
+    },
+    {
+      "file": "Suddenly I See.txt",
+      "title": "Suddenly I See",
+      "artist": "KT Tunstall",
+      "language": "en"
+    },
+    {
+      "file": "ציפור מדבר.txt",
+      "title": "ציפור מדבר",
+      "artist": "אתניקס",
+      "language": "he"
+    },
+    {
+      "file": "Snowman.txt",
+      "title": "Snowman",
+      "artist": "Sia",
+      "language": "en"
+    },
+    {
+      "file": "אולי נדבר.txt",
+      "title": "אולי נדבר",
+      "artist": "נדב גדג'",
+      "language": "he"
+    },
+    {
+      "file": "Mercy.txt",
+      "title": "Mercy",
+      "artist": "Duffy",
+      "language": "en"
     }
   ]
 }
