@@ -259,6 +259,19 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-05T09:23:52.411Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Going Under.txt",
+      "title": "Going Under",
+      "mode": "classic",
+      "words": 178,
+      "total": 224,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-05T10:45:02.892Z"
     }
   ]
 }
