@@ -272,6 +272,19 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-05T10:45:02.892Z"
+    },
+    {
+      "user": "Koren",
+      "file": "אם רק תדברי.txt",
+      "title": "אם רק תדברי",
+      "mode": "classic",
+      "words": 114,
+      "total": 171,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-05T11:10:14.125Z"
     }
   ]
 }

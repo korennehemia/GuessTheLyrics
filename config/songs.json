@@ -521,6 +521,30 @@
       "title": "אם רק תדברי",
       "artist": "גיא מזיג",
       "language": "he"
+    },
+    {
+      "file": "קצת אהבה לא תזיק.txt",
+      "title": "קצת אהבה לא תזיק",
+      "artist": "אלון עדר",
+      "language": "he"
+    },
+    {
+      "file": "תל אביב בלילה.txt",
+      "title": "תל אביב בלילה",
+      "artist": "עדן בן זקן",
+      "language": "he"
+    },
+    {
+      "file": "איפה היית.txt",
+      "title": "איפה היית",
+      "artist": "בית הבובות",
+      "language": "he"
+    },
+    {
+      "file": "כל הזמן הזה.txt",
+      "title": "כל הזמן הזה",
+      "artist": "רביד פלוטניק",
+      "language": "he"
     }
   ]
 }
