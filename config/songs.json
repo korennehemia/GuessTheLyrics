@@ -479,6 +479,36 @@
       "title": "Mercy",
       "artist": "Duffy",
       "language": "en"
+    },
+    {
+      "file": "Believer.txt",
+      "title": "Believer",
+      "artist": "Imagine Dragons",
+      "language": "en"
+    },
+    {
+      "file": "יהלומים.txt",
+      "title": "יהלומים",
+      "artist": "נועה קירל",
+      "language": "he"
+    },
+    {
+      "file": "פנתרה.txt",
+      "title": "פנתרה",
+      "artist": "נועה קירל",
+      "language": "he"
+    },
+    {
+      "file": "לאב סונג.txt",
+      "title": "לאב סונג",
+      "artist": "נועה קירל",
+      "language": "he"
+    },
+    {
+      "file": "Going Under.txt",
+      "title": "Going Under",
+      "artist": "Evanescence",
+      "language": "en"
     }
   ]
 }

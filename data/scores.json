@@ -181,6 +181,84 @@
       "finished": false,
       "seconds": null,
       "date": "2026-09-09T13:50:32.425Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Snowman.txt",
+      "title": "Snowman",
+      "mode": "classic",
+      "words": 244,
+      "total": 249,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-09-10T08:33:15.191Z"
+    },
+    {
+      "user": "Koren",
+      "file": "All Days Dormant.txt",
+      "title": "All Days Dormant",
+      "mode": "mystery",
+      "words": 99,
+      "total": 273,
+      "guesses": 23,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": 345,
+      "date": "2026-09-14T10:02:26.189Z"
+    },
+    {
+      "user": "Koren",
+      "file": "הסיפור הוא לא עלייך.txt",
+      "title": "הסיפור הוא לא עלייך",
+      "mode": "mystery",
+      "words": 80,
+      "total": 449,
+      "guesses": 13,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": 172,
+      "date": "2026-09-14T10:08:42.694Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Believer.txt",
+      "title": "Believer",
+      "mode": "classic",
+      "words": 380,
+      "total": 525,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-05T05:57:34.785Z"
+    },
+    {
+      "user": "Koren",
+      "file": "יהלומים.txt",
+      "title": "יהלומים",
+      "mode": "classic",
+      "words": 176,
+      "total": 203,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-05T09:10:35.071Z"
+    },
+    {
+      "user": "Koren",
+      "file": "פנתרה.txt",
+      "title": "פנתרה",
+      "mode": "classic",
+      "words": 193,
+      "total": 204,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-05T09:23:52.411Z"
     }
   ]
 }
