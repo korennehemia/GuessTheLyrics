@@ -285,6 +285,32 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-05T11:10:14.125Z"
+    },
+    {
+      "user": "Koren",
+      "file": "כל הזמן הזה.txt",
+      "title": "כל הזמן הזה",
+      "mode": "classic",
+      "words": 203,
+      "total": 302,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-05T11:43:54.359Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Somewhere Only We Know.txt",
+      "title": "Somewhere Only We Know",
+      "mode": "classic",
+      "words": 267,
+      "total": 269,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-07T14:23:25.393Z"
     }
   ]
 }

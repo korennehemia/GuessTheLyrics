@@ -545,6 +545,24 @@
       "title": "כל הזמן הזה",
       "artist": "רביד פלוטניק",
       "language": "he"
+    },
+    {
+      "file": "Somewhere Only We Know.txt",
+      "title": "Somewhere Only We Know",
+      "artist": "Keane",
+      "language": "en"
+    },
+    {
+      "file": "Alone Again.txt",
+      "title": "Alone Again",
+      "artist": "Gilbert O'Sullivan",
+      "language": "en"
+    },
+    {
+      "file": "מכה אפורה.txt",
+      "title": "מכה אפורה",
+      "artist": "מוניקה סקס",
+      "language": "he"
     }
   ]
 }
