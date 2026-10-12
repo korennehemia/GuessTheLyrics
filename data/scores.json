@@ -363,6 +363,19 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-08T14:24:17.048Z"
+    },
+    {
+      "user": "Koren",
+      "file": "אנג'ל.txt",
+      "title": "אנג'ל",
+      "mode": "classic",
+      "words": 229,
+      "total": 308,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-12T10:35:04.810Z"
     }
   ]
 }
