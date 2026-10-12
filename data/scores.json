@@ -311,6 +311,58 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-07T14:23:25.393Z"
+    },
+    {
+      "user": "Koren",
+      "file": "מכה אפורה.txt",
+      "title": "מכה אפורה",
+      "mode": "classic",
+      "words": 126,
+      "total": 138,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-08T11:49:44.642Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Fabulous.txt",
+      "title": "Fabulous",
+      "mode": "classic",
+      "words": 221,
+      "total": 284,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-08T14:09:15.290Z"
+    },
+    {
+      "user": "Koren",
+      "file": "אף אחד לא בא לי.txt",
+      "title": "אף אחד לא בא לי",
+      "mode": "classic",
+      "words": 112,
+      "total": 179,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-08T14:12:39.336Z"
+    },
+    {
+      "user": "Koren",
+      "file": "לולה.txt",
+      "title": "לולה",
+      "mode": "classic",
+      "words": 140,
+      "total": 141,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-08T14:24:17.048Z"
     }
   ]
 }
