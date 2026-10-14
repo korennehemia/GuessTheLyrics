@@ -376,6 +376,97 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-12T10:35:04.810Z"
+    },
+    {
+      "user": "Koren",
+      "file": "מי אוהב אותך יותר ממני.txt",
+      "title": "מי אוהב אותך יותר ממני",
+      "mode": "classic",
+      "words": 113,
+      "total": 115,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-12T10:51:24.669Z"
+    },
+    {
+      "user": "Koren",
+      "file": "צל עץ תמר.txt",
+      "title": "צל עץ תמר",
+      "mode": "classic",
+      "words": 25,
+      "total": 117,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-12T11:33:55.902Z"
+    },
+    {
+      "user": "Koren",
+      "file": "צל עץ תמר.txt",
+      "title": "צל עץ תמר",
+      "mode": "classic",
+      "words": 77,
+      "total": 117,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-12T11:43:35.020Z"
+    },
+    {
+      "user": "Koren",
+      "file": "נעים עכשיו.txt",
+      "title": "נעים עכשיו",
+      "mode": "classic",
+      "words": 121,
+      "total": 121,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": true,
+      "seconds": 303,
+      "date": "2026-10-12T14:53:39.611Z"
+    },
+    {
+      "user": "Koren",
+      "file": "ברחובות של תל אביב.txt",
+      "title": "ברחובות של תל אביב",
+      "mode": "classic",
+      "words": 204,
+      "total": 243,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-12T15:18:57.876Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Safe And Sound.txt",
+      "title": "Safe And Sound",
+      "mode": "classic",
+      "words": 277,
+      "total": 280,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-12T15:28:05.786Z"
+    },
+    {
+      "user": "Koren",
+      "file": "7 Rings.txt",
+      "title": "7 Rings",
+      "mode": "classic",
+      "words": 437,
+      "total": 488,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-12T15:37:18.120Z"
     }
   ]
 }

@@ -581,6 +581,24 @@
       "title": "מי אוהב אותך יותר ממני",
       "artist": "ארקדי דוכין",
       "language": "he"
+    },
+    {
+      "file": "ברחובות של תל אביב.txt",
+      "title": "ברחובות של תל אביב",
+      "artist": "עדן בן זקן",
+      "language": "he"
+    },
+    {
+      "file": "Safe And Sound.txt",
+      "title": "Safe And Sound",
+      "artist": "Capital Cities",
+      "language": "en"
+    },
+    {
+      "file": "Try Everything.txt",
+      "title": "Try Everything",
+      "artist": "Shakira",
+      "language": "en"
     }
   ]
 }
