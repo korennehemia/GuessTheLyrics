@@ -558,6 +558,19 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-19T12:02:38.504Z"
+    },
+    {
+      "user": "Guest",
+      "file": "שום דבר לא יפגע בי.txt",
+      "title": "שום דבר לא יפגע בי",
+      "mode": "classic",
+      "words": 106,
+      "total": 106,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": true,
+      "seconds": 78,
+      "date": "2026-10-19T12:06:30.749Z"
     }
   ]
 }
