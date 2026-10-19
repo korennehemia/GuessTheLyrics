@@ -532,6 +532,32 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-15T13:13:46.068Z"
+    },
+    {
+      "user": "Guest",
+      "file": "I'll Make A Man Out Of You.txt",
+      "title": "I'll Make A Man Out Of You",
+      "mode": "classic",
+      "words": 196,
+      "total": 207,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-19T11:49:33.217Z"
+    },
+    {
+      "user": "Guest",
+      "file": "How Far I'll Go.txt",
+      "title": "How Far I'll Go",
+      "mode": "classic",
+      "words": 260,
+      "total": 266,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-19T12:02:38.504Z"
     }
   ]
 }
