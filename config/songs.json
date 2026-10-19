@@ -599,6 +599,36 @@
       "title": "Try Everything",
       "artist": "Shakira",
       "language": "en"
+    },
+    {
+      "file": "How Far I'll Go.txt",
+      "title": "How Far I'll Go",
+      "artist": "Moana",
+      "language": "en"
+    },
+    {
+      "file": "Hakuna Matata.txt",
+      "title": "Hakuna Matata",
+      "artist": "Disney - Lion King",
+      "language": "en"
+    },
+    {
+      "file": "אצלנו בגן.txt",
+      "title": "אצלנו בגן",
+      "artist": "שי לי עטרי",
+      "language": "he"
+    },
+    {
+      "file": "מלכת הדור.txt",
+      "title": "מלכת הדור",
+      "artist": "עומר אדם",
+      "language": "he"
+    },
+    {
+      "file": "I'll Make A Man Out Of You.txt",
+      "title": "I'll Make A Man Out Of You",
+      "artist": "Mulan",
+      "language": "en"
     }
   ]
 }

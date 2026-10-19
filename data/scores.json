@@ -467,6 +467,71 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-12T15:37:18.120Z"
+    },
+    {
+      "user": "Koren",
+      "file": "עד מחר.txt",
+      "title": "עד מחר",
+      "mode": "classic",
+      "words": 76,
+      "total": 79,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-14T14:04:41.968Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Maneater.txt",
+      "title": "Maneater",
+      "mode": "classic",
+      "words": 322,
+      "total": 343,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-15T11:41:00.369Z"
+    },
+    {
+      "user": "Koren",
+      "file": "Try Everything.txt",
+      "title": "Try Everything",
+      "mode": "classic",
+      "words": 244,
+      "total": 288,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-15T12:43:47.103Z"
+    },
+    {
+      "user": "Koren",
+      "file": "אצלנו בגן.txt",
+      "title": "אצלנו בגן",
+      "mode": "classic",
+      "words": 188,
+      "total": 189,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-15T12:57:03.218Z"
+    },
+    {
+      "user": "Koren",
+      "file": "מלכת הדור.txt",
+      "title": "מלכת הדור",
+      "mode": "classic",
+      "words": 240,
+      "total": 298,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-15T13:13:46.068Z"
     }
   ]
 }
