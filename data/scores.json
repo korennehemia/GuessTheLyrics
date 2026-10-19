@@ -584,6 +584,19 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-19T12:33:34.548Z"
+    },
+    {
+      "user": "Guest",
+      "file": "רבות הדרכים.txt",
+      "title": "רבות הדרכים",
+      "mode": "classic",
+      "words": 177,
+      "total": 189,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-19T12:48:35.768Z"
     }
   ]
 }
