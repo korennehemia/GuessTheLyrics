@@ -571,6 +571,19 @@
       "finished": true,
       "seconds": 78,
       "date": "2026-10-19T12:06:30.749Z"
+    },
+    {
+      "user": "Guest",
+      "file": "אוטובוס אחרון לחיפה.txt",
+      "title": "אוטובוס אחרון לחיפה",
+      "mode": "classic",
+      "words": 239,
+      "total": 272,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-19T12:33:34.548Z"
     }
   ]
 }
