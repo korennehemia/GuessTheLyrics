@@ -597,6 +597,58 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-19T12:48:35.768Z"
+    },
+    {
+      "user": "Guest",
+      "file": "מכשפה.txt",
+      "title": "מכשפה",
+      "mode": "classic",
+      "words": 187,
+      "total": 275,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-19T13:08:34.903Z"
+    },
+    {
+      "user": "Guest",
+      "file": "הפשע המושלם.txt",
+      "title": "הפשע המושלם",
+      "mode": "classic",
+      "words": 173,
+      "total": 250,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-19T13:14:36.269Z"
+    },
+    {
+      "user": "Guest",
+      "file": "Gangnam Style.txt",
+      "title": "Gangnam Style",
+      "mode": "classic",
+      "words": 0,
+      "total": 607,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-19T13:49:21.936Z"
+    },
+    {
+      "user": "Guest",
+      "file": "Cake By The Ocean.txt",
+      "title": "Cake By The Ocean",
+      "mode": "classic",
+      "words": 409,
+      "total": 450,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-19T14:00:30.172Z"
     }
   ]
 }

@@ -665,6 +665,24 @@
       "title": "רשימת קניות",
       "artist": "אודיה",
       "language": "he"
+    },
+    {
+      "file": "Gangnam Style.txt",
+      "title": "Gangnam Style",
+      "artist": "PSY",
+      "language": "en"
+    },
+    {
+      "file": "Cake By The Ocean.txt",
+      "title": "Cake By The Ocean",
+      "artist": "DNCE",
+      "language": "en"
+    },
+    {
+      "file": "פרח השכונות.txt",
+      "title": "פרח השכונות",
+      "artist": "טיפקס ועלמה זק",
+      "language": "he"
     }
   ]
 }
