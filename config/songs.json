@@ -683,6 +683,24 @@
       "title": "פרח השכונות",
       "artist": "טיפקס ועלמה זק",
       "language": "he"
+    },
+    {
+      "file": "רונדלים.txt",
+      "title": "רונדלים",
+      "artist": "סטטיק",
+      "language": "he"
+    },
+    {
+      "file": "Fuck You.txt",
+      "title": "Fuck You",
+      "artist": "Lily Allen",
+      "language": "en"
+    },
+    {
+      "file": "תביאו חטיפים.txt",
+      "title": "תביאו חטיפים",
+      "artist": "ג'ימבו ג'יי + שיר הדס מאיר",
+      "language": "he"
     }
   ]
 }

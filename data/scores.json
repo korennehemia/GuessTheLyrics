@@ -649,6 +649,45 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-19T14:00:30.172Z"
+    },
+    {
+      "user": "Guest",
+      "file": "פרח השכונות.txt",
+      "title": "פרח השכונות",
+      "mode": "classic",
+      "words": 113,
+      "total": 303,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-21T13:37:18.773Z"
+    },
+    {
+      "user": "Guest",
+      "file": "רונדלים.txt",
+      "title": "רונדלים",
+      "mode": "classic",
+      "words": 101,
+      "total": 165,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-21T13:46:41.399Z"
+    },
+    {
+      "user": "Guest",
+      "file": "Fuck You.txt",
+      "title": "Fuck You",
+      "mode": "classic",
+      "words": 331,
+      "total": 342,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-21T18:12:03.062Z"
     }
   ]
 }
