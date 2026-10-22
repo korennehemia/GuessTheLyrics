@@ -688,6 +688,19 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-21T18:12:03.062Z"
+    },
+    {
+      "user": "Guest",
+      "file": "תביאו חטיפים.txt",
+      "title": "תביאו חטיפים",
+      "mode": "classic",
+      "words": 209,
+      "total": 341,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-22T10:43:00.081Z"
     }
   ]
 }
