@@ -737,6 +737,24 @@
       "title": "שגר פגר",
       "artist": "הבילויים",
       "language": "he"
+    },
+    {
+      "file": "Domino.txt",
+      "title": "Domino",
+      "artist": "Jessi J",
+      "language": "en"
+    },
+    {
+      "file": "נמר הכסף.txt",
+      "title": "נמר הכסף",
+      "artist": "נמר הכסף",
+      "language": "he"
+    },
+    {
+      "file": "טניה.txt",
+      "title": "טניה",
+      "artist": "ערוץ הכיבוד",
+      "language": "he"
     }
   ]
 }
