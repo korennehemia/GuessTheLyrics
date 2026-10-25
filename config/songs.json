@@ -755,6 +755,24 @@
       "title": "טניה",
       "artist": "ערוץ הכיבוד",
       "language": "he"
+    },
+    {
+      "file": "Levitating.txt",
+      "title": "Levitating",
+      "artist": "Dua Lipa",
+      "language": "en"
+    },
+    {
+      "file": "New Rules.txt",
+      "title": "New Rules",
+      "artist": "Dua Lipa",
+      "language": "en"
+    },
+    {
+      "file": "שירת הסטיקר.txt",
+      "title": "שירת הסטיקר",
+      "artist": "הדג נחש",
+      "language": "he"
     }
   ]
 }

@@ -831,6 +831,32 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-25T14:13:51.803Z"
+    },
+    {
+      "user": "Guest",
+      "file": "Safe And Sound.txt",
+      "title": "Safe And Sound",
+      "mode": "mystery",
+      "words": 60,
+      "total": 280,
+      "guesses": 7,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": 358,
+      "date": "2026-10-25T14:31:31.354Z"
+    },
+    {
+      "user": "Guest",
+      "file": "טניה.txt",
+      "title": "טניה",
+      "mode": "classic",
+      "words": 285,
+      "total": 327,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-25T14:42:08.200Z"
     }
   ]
 }
