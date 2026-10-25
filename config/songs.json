@@ -707,6 +707,36 @@
       "title": "סלט",
       "artist": "ג'ימבו ג'יי",
       "language": "he"
+    },
+    {
+      "file": "אבא למה.txt",
+      "title": "אבא למה",
+      "artist": "ג'ימבו ג'יי",
+      "language": "he"
+    },
+    {
+      "file": "צבעים.txt",
+      "title": "צבעים",
+      "artist": "גיל ווין + רון בוחניק",
+      "language": "he"
+    },
+    {
+      "file": "Too Sweet.txt",
+      "title": "Too Sweet",
+      "artist": "Hozier",
+      "language": "en"
+    },
+    {
+      "file": "Take Me To Church.txt",
+      "title": "Take Me To Church",
+      "artist": "Hozier",
+      "language": "en"
+    },
+    {
+      "file": "שגר פגר.txt",
+      "title": "שגר פגר",
+      "artist": "הבילויים",
+      "language": "he"
     }
   ]
 }

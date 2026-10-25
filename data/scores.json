@@ -701,6 +701,84 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-22T10:43:00.081Z"
+    },
+    {
+      "user": "Guest",
+      "file": "סלט.txt",
+      "title": "סלט",
+      "mode": "classic",
+      "words": 145,
+      "total": 239,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-22T10:58:26.494Z"
+    },
+    {
+      "user": "Guest",
+      "file": "אבא למה.txt",
+      "title": "אבא למה",
+      "mode": "classic",
+      "words": 228,
+      "total": 263,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-22T14:15:34.797Z"
+    },
+    {
+      "user": "Guest",
+      "file": "צבעים.txt",
+      "title": "צבעים",
+      "mode": "classic",
+      "words": 129,
+      "total": 230,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-22T14:19:41.080Z"
+    },
+    {
+      "user": "Guest",
+      "file": "Take Me To Church.txt",
+      "title": "Take Me To Church",
+      "mode": "classic",
+      "words": 383,
+      "total": 430,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-22T14:29:53.138Z"
+    },
+    {
+      "user": "Guest",
+      "file": "Too Sweet.txt",
+      "title": "Too Sweet",
+      "mode": "classic",
+      "words": 241,
+      "total": 331,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-22T14:34:39.121Z"
+    },
+    {
+      "user": "Guest",
+      "file": "Believer.txt",
+      "title": "Believer",
+      "mode": "classic",
+      "words": 349,
+      "total": 415,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-24T22:18:23.601Z"
     }
   ]
 }
