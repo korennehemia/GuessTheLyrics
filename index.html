@@ -285,6 +285,19 @@
           <div class="song-artist" id="challengeArtist"></div>
         </div>
         <div class="stats">
+          <div class="stat clue-stat" id="clueStat">
+            <span class="stat-label">Clues</span>
+            <div class="clue-row">
+              <div class="clue-item">
+                <button id="kickstartBtn" class="btn btn-clue" type="button">Kickstart</button>
+                <span class="help-icon" tabindex="0" role="note" aria-label="Kickstart help" data-tip="Reveals every instance of the most common hidden word in yellow. Usable once, until 50% of the lyrics are found. Clue words don't count toward your score.">?</span>
+              </div>
+              <div class="clue-item">
+                <button id="touchupsBtn" class="btn btn-clue" type="button">Touchups</button>
+                <span class="help-icon" tabindex="0" role="note" aria-label="Touchups help" data-tip="Reveals every instance of the most common hidden word in yellow. Usable once, between 55% and 95% of the lyrics found. Clue words don't count toward your score.">?</span>
+              </div>
+            </div>
+          </div>
           <div class="stat">
             <span class="stat-label" id="timerLabel">Time</span>
             <span class="stat-value" id="timer">10:00</span>

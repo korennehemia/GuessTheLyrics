@@ -241,7 +241,7 @@ body {
   flex: 0 0 auto;
   margin-bottom: 12px;
 }
-.challenge-meta { flex: 1; min-width: 140px; }
+.challenge-meta { flex: 1; min-width: 140px; text-align: left; }
 .song-title { font-weight: 700; font-size: 1.15rem; }
 .song-artist { color: var(--muted); font-size: 0.9rem; }
 
@@ -319,7 +319,70 @@ body {
   color: var(--good);
   padding: 0 2px;
 }
+.token.word.clued {
+  background: rgba(251, 191, 36, 0.16);
+  color: #fbbf24;
+  padding: 0 2px;
+}
 .token.word.just-found { animation: pop 0.35s ease; }
+
+.btn.btn-clue {
+  background: rgba(251, 191, 36, 0.16);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+.btn.btn-clue:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.btn-clue.used,
+.btn.btn-clue.used:disabled {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  color: var(--bg);
+  opacity: 1;
+}
+
+.clue-row { display: flex; gap: 10px; margin-top: 2px; }
+.clue-item { display: flex; align-items: center; gap: 4px; }
+.clue-stat .btn-clue { padding: 3px 10px; font-size: 0.85rem; }
+.help-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--muted);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: help;
+}
+.help-icon:hover, .help-icon:focus { color: var(--text); border-color: var(--text); outline: none; }
+.help-icon::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 8px 10px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 20;
+}
+.help-icon:hover::after, .help-icon:focus::after { opacity: 1; }
 .token.punct, .token.space { color: var(--text); }
 .token.word.revealed-end {
   background: rgba(248, 113, 113, 0.14);

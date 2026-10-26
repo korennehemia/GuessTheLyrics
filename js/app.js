@@ -48,6 +48,8 @@ const state = {
   tokens: [], // parsed lyric tokens
   totalWords: 0, // non-unique word count
   foundWords: 0,
+  cluedWords: 0, // revealed by clues; count toward completion but not the score
+  cluesUsed: { kickstart: false, touchups: false },
   timeLeft: GAME_SECONDS,
   elapsed: 0, // counts up in mystery mode
   timerId: null,
@@ -152,6 +154,9 @@ const el = {
   progressFill: document.getElementById("progressFill"),
   guessInput: document.getElementById("guessInput"),
   pauseBtn: document.getElementById("pauseBtn"),
+  clueStat: document.getElementById("clueStat"),
+  kickstartBtn: document.getElementById("kickstartBtn"),
+  touchupsBtn: document.getElementById("touchupsBtn"),
   giveUpBtn: document.getElementById("giveUpBtn"),
   showResultsBtn: document.getElementById("showResultsBtn"),
   lyrics: document.getElementById("lyrics"),
@@ -511,6 +516,8 @@ async function startChallenge(song) {
   state.tokens = tokenize(text);
   state.totalWords = state.tokens.filter((t) => t.type === "word").length;
   state.foundWords = 0;
+  state.cluedWords = 0;
+  state.cluesUsed = { kickstart: false, touchups: false };
   state.timeLeft = GAME_SECONDS;
   state.elapsed = 0;
   state.running = true;
@@ -544,6 +551,7 @@ async function startChallenge(song) {
   // Pausing only matters when a clock is running.
   el.pauseBtn.disabled = false;
   el.pauseBtn.classList.toggle("hidden", mystery);
+  el.clueStat.classList.toggle("hidden", mystery);
   el.pauseOverlay.classList.add("hidden");
   el.showResultsBtn.classList.add("hidden");
 
@@ -609,6 +617,7 @@ function pauseGame() {
   stopTimer();
   el.guessInput.disabled = true;
   el.pauseOverlay.classList.remove("hidden");
+  updateClueButtons();
 }
 
 function resumeGame() {
@@ -618,6 +627,7 @@ function resumeGame() {
   el.guessInput.disabled = false;
   el.guessInput.focus();
   startTimer();
+  updateClueButtons();
 }
 
 function updateTimerDisplay() {
@@ -630,14 +640,74 @@ function updateTimerDisplay() {
   el.timer.classList.toggle("warning", !mystery && state.timeLeft <= 30);
 }
 
+function revealedPercent() {
+  const revealed = state.foundWords + state.cluedWords;
+  return state.totalWords === 0 ? 0 : (revealed / state.totalWords) * 100;
+}
+
 function updateStats() {
-  const pct =
-    state.totalWords === 0 ? 0 : (state.foundWords / state.totalWords) * 100;
-  el.wordsFound.textContent = `${state.foundWords} / ${state.totalWords} (${Math.round(
+  const pct = revealedPercent();
+  el.wordsFound.textContent = `${state.foundWords + state.cluedWords} / ${state.totalWords} (${Math.round(
     pct,
   )}%)`;
   el.progressFill.style.width = `${pct}%`;
   if (state.revealedKeys) el.wordCost.textContent = state.revealedKeys.size;
+  updateClueButtons();
+}
+
+const CLUES = {
+  kickstart: { min: 0, max: 50 },
+  touchups: { min: 55, max: 95 },
+};
+
+function clueAvailable(name) {
+  if (state.mode !== "classic" || !state.running || state.paused) return false;
+  if (state.cluesUsed[name]) return false;
+  const pct = revealedPercent();
+  return pct >= CLUES[name].min && pct < CLUES[name].max;
+}
+
+function updateClueButtons() {
+  el.kickstartBtn.disabled = !clueAvailable("kickstart");
+  el.touchupsBtn.disabled = !clueAvailable("touchups");
+  el.kickstartBtn.classList.toggle("used", state.cluesUsed.kickstart);
+  el.touchupsBtn.classList.toggle("used", state.cluesUsed.touchups);
+}
+
+// Reveal every occurrence of the most common still-hidden word, in yellow.
+function useClue(name) {
+  if (!clueAvailable(name)) return;
+  const counts = new Map();
+  for (const tk of state.tokens) {
+    if (tk.type === "word" && !tk.found) {
+      counts.set(tk.key, (counts.get(tk.key) || 0) + 1);
+    }
+  }
+  let bestKey = null;
+  let bestCount = 0;
+  for (const [key, count] of counts) {
+    if (count > bestCount) {
+      bestKey = key;
+      bestCount = count;
+    }
+  }
+  if (!bestKey) return;
+
+  for (const tk of state.tokens) {
+    if (tk.type === "word" && !tk.found && tk.key === bestKey) {
+      tk.found = true;
+      tk.clued = true;
+      if (tk.node) {
+        tk.node.className = "token word clued just-found";
+        tk.node.textContent = tk.text;
+      }
+    }
+  }
+  state.cluesUsed[name] = true;
+  state.cluedWords += bestCount;
+  updateStats();
+  el.guessInput.focus();
+  if (state.foundWords + state.cluedWords >= state.totalWords) endGame(true);
 }
 
 // Reveal every not-yet-found occurrence of the guessed word.
@@ -668,7 +738,7 @@ function handleGuess(raw) {
     el.guessInput.value = "";
     // Running out of lyrics ends the round, but in mystery mode it is only a
     // win if the song was actually named along the way.
-    if (state.foundWords >= state.totalWords) {
+    if (state.foundWords + state.cluedWords >= state.totalWords) {
       endGame(state.mode === "mystery" ? state.titleSolved : true);
     }
   }
@@ -681,6 +751,7 @@ function endGame(won) {
   el.pauseOverlay.classList.add("hidden");
   el.guessInput.disabled = true;
   el.pauseBtn.classList.add("hidden");
+  updateClueButtons();
   // The round is over, so "Give up" becomes the way out, and a "Show results"
   // button sits next to it so the overlay can be reopened at any time.
   el.giveUpBtn.textContent = "\u{1F3E0} Exit to home";
@@ -701,16 +772,21 @@ function endGame(won) {
   const found = state.foundWords;
   const total = state.totalWords;
   const finishedSeconds = won ? GAME_SECONDS - state.timeLeft : null;
+  const clueNote = state.cluedWords
+    ? ` (${state.cluedWords} revealed by clues don't count)`
+    : "";
   el.mysteryReveal.classList.add("hidden");
   if (won) {
     el.resultTitle.textContent = "🎉 You found them all!";
     const m = Math.floor(finishedSeconds / 60);
     const s = finishedSeconds % 60;
-    el.resultText.textContent = `You uncovered all ${total} words in ${m}:${String(s).padStart(2, "0")}.`;
+    el.resultText.textContent = state.cluedWords
+      ? `You uncovered the song in ${m}:${String(s).padStart(2, "0")} — ${found} of ${total} words are yours${clueNote}.`
+      : `You uncovered all ${total} words in ${m}:${String(s).padStart(2, "0")}.`;
     launchConfetti();
   } else {
     el.resultTitle.textContent = "⏰ Time's up!";
-    el.resultText.textContent = `You found ${found} of ${total} words. The rest are highlighted in red.`;
+    el.resultText.textContent = `You found ${found} of ${total} words${clueNote}. The rest are highlighted in red.`;
   }
   el.resultOverlay.classList.remove("hidden");
 
@@ -1993,6 +2069,8 @@ for (const select of userSelects()) {
 }
 el.guessInput.addEventListener("input", (e) => handleGuess(e.target.value));
 el.pauseBtn.addEventListener("click", pauseGame);
+el.kickstartBtn.addEventListener("click", () => useClue("kickstart"));
+el.touchupsBtn.addEventListener("click", () => useClue("touchups"));
 el.continueBtn.addEventListener("click", resumeGame);
 // Mid-round this is "Give up"; once the round is over it is the way home.
 el.giveUpBtn.addEventListener("click", () => {

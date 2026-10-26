@@ -857,6 +857,97 @@
       "finished": false,
       "seconds": null,
       "date": "2026-10-25T14:42:08.200Z"
+    },
+    {
+      "user": "Guest",
+      "file": "New Rules.txt",
+      "title": "New Rules",
+      "mode": "classic",
+      "words": 284,
+      "total": 334,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-25T21:36:14.825Z"
+    },
+    {
+      "user": "Guest",
+      "file": "Levitating.txt",
+      "title": "Levitating",
+      "mode": "classic",
+      "words": 0,
+      "total": 645,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-26T10:16:04.880Z"
+    },
+    {
+      "user": "Guest",
+      "file": "אבא למה.txt",
+      "title": "אבא למה",
+      "mode": "classic",
+      "words": 0,
+      "total": 263,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-26T10:19:44.161Z"
+    },
+    {
+      "user": "Guest",
+      "file": "7 Rings.txt",
+      "title": "7 Rings",
+      "mode": "classic",
+      "words": 0,
+      "total": 488,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-26T10:19:54.182Z"
+    },
+    {
+      "user": "Guest",
+      "file": "7 Rings.txt",
+      "title": "7 Rings",
+      "mode": "classic",
+      "words": 0,
+      "total": 488,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-26T10:20:25.126Z"
+    },
+    {
+      "user": "Guest",
+      "file": "אוטובוס אחרון לחיפה.txt",
+      "title": "אוטובוס אחרון לחיפה",
+      "mode": "classic",
+      "words": 0,
+      "total": 272,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-26T10:22:45.396Z"
+    },
+    {
+      "user": "Guest",
+      "file": "26.txt",
+      "title": "26",
+      "mode": "classic",
+      "words": 0,
+      "total": 222,
+      "guesses": null,
+      "artistGuessed": false,
+      "finished": false,
+      "seconds": null,
+      "date": "2026-10-26T10:26:50.184Z"
     }
   ]
 }
